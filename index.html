@@ -1,0 +1,2573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>SMOKE ON! Lead Solo - US Air Show Jet Demo Team Simulator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ['"JetBrains Mono"', 'monospace'],
+            hud: ['"Chakra Petch"', 'sans-serif'],
+            sans: ['"Inter"', 'sans-serif']
+          },
+          colors: {
+            cockpit: {
+              950: '#040711',
+              900: '#081020',
+              800: '#0f1c34',
+              700: '#182d52',
+              600: '#234175'
+            },
+            radar: '#10b981',
+            amberhud: '#f59e0b',
+            cyanview: '#06b6d4',
+            goldfoil: '#eab308',
+            warningred: '#ef4444'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #040711;
+      color: #e2e8f0;
+      -webkit-tap-highlight-color: transparent;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+    .hud-border {
+      border: 1px solid rgba(6, 182, 212, 0.25);
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.08) inset;
+    }
+    .hud-amber-border {
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.08) inset;
+    }
+    .hud-red-border {
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.1) inset;
+    }
+    .scanlines {
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #081020;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #0284c7;
+    }
+    .glass-panel {
+      background: rgba(8, 16, 32, 0.88);
+      backdrop-filter: blur(10px);
+    }
+    .touch-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  </style>
+</head>
+<body class="font-sans antialiased selection:bg-cyan-500 selection:text-black min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+  <!-- Scanline Overlay -->
+  <div class="fixed inset-0 scanlines z-40 pointer-events-none"></div>
+
+  <!-- AVIATION PHOTOGRAPHER FAN DISCLAIMER BANNER -->
+  <div class="bg-gradient-to-r from-amber-950/90 via-slate-900 to-amber-950/90 border-b border-amber-600/40 px-3 py-1.5 text-center text-[11px] font-mono text-amber-200/90 z-40 relative flex items-center justify-between gap-2">
+    <div class="flex items-center gap-1.5 truncate text-left mx-auto">
+      <span class="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 font-bold border border-amber-500/30 text-[10px]">FAN TRIBUTE</span>
+      <span class="truncate">Created by an aviation photographer & air show enthusiast. Not affiliated with the DoD, Blue Angels, Thunderbirds, or any military branch.</span>
+    </div>
+    <button onclick="openDisclaimerModal()" class="shrink-0 text-amber-400 hover:text-white underline text-[10px] ml-2 font-hud font-bold">FULL NOTICE</button>
+  </div>
+
+  <!-- TOP STATUS BAR & COCKPIT HUD -->
+  <header class="sticky top-0 z-30 bg-cockpit-900/95 border-b border-cyan-500/30 px-3 py-2 sm:px-6 backdrop-blur">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <!-- Team Emblem & Callsign -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-800 flex items-center justify-center font-hud font-bold text-white shadow-lg shadow-cyan-500/30 text-lg border border-cyan-300/40">
+          SO
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="top-team-name" class="font-hud font-bold text-sm sm:text-base tracking-wider text-cyan-400 uppercase">THUNDER CREST DEMO TEAM</span>
+            <span id="top-jet-model" class="text-[10px] font-mono px-2 py-0.5 rounded bg-cockpit-800 text-amberhud border border-amberhud/40 font-bold">F-16C VIPER</span>
+          </div>
+          <div class="text-[11px] font-mono text-slate-400 flex items-center gap-2">
+            <span>WEEK <b id="top-week" class="text-white">1</b>/36</span>
+            <span class="text-slate-600">|</span>
+            <span id="top-phase" class="text-amberhud font-semibold uppercase">WINTER WORKUPS</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Ribbon -->
+      <div class="flex items-center gap-2 sm:gap-3 font-mono text-xs overflow-x-auto py-1">
+        <!-- Budget -->
+        <div class="bg-cockpit-950/90 px-2.5 py-1 rounded border border-slate-700/60 flex items-center gap-1.5">
+          <span class="text-slate-400 text-[10px]">FUNDS</span>
+          <span id="top-funds" class="font-bold text-emerald-400">$4,850,000</span>
+        </div>
+        <!-- JP-8 Fuel -->
+        <div class="bg-cockpit-950/90 px-2.5 py-1 rounded border border-slate-700/60 flex items-center gap-1.5">
+          <span class="text-slate-400 text-[10px]">JET-A/JP-8</span>
+          <span id="top-fuel" class="font-bold text-cyan-300">145,000 gal</span>
+        </div>
+        <!-- Prestige -->
+        <div class="bg-cockpit-950/90 px-2.5 py-1 rounded border border-slate-700/60 flex items-center gap-1.5">
+          <span class="text-slate-400 text-[10px]">PRESTIGE</span>
+          <span id="top-prestige" class="font-bold text-goldfoil">78</span>
+        </div>
+        <!-- Certification Status -->
+        <div class="bg-cockpit-950/90 px-2.5 py-1 rounded border border-slate-700/60 flex items-center gap-1.5">
+          <span class="text-slate-400 text-[10px]">FAA/DOD</span>
+          <span id="top-cert" class="font-bold text-warningred">PENDING</span>
+        </div>
+        <!-- GOD MODE LAUNCH BUTTON -->
+        <button onclick="toggleGodModeDrawer()" class="px-2.5 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amberhud border border-amberhud/50 text-xs font-hud font-bold flex items-center gap-1 animate-pulse shadow-sm shadow-amber-500/30" title="Open Dev Testing Tools">
+          <span>⚡ GOD MODE</span>
+        </button>
+        <!-- Audio toggle button -->
+        <button id="btn-audio-toggle" class="p-1.5 rounded bg-cockpit-800 border border-slate-700 text-slate-300 hover:text-cyan-400 text-xs flex items-center gap-1" title="Toggle Sound Engine">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z"></path></svg>
+          <span id="audio-label" class="hidden sm:inline text-[10px]">SFX ON</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="sticky top-[73px] z-20 bg-cockpit-950/90 border-b border-slate-800 backdrop-blur px-2 sm:px-6">
+    <div class="max-w-7xl mx-auto flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar py-1.5 text-xs font-hud">
+      <button onclick="switchTab('ops')" class="nav-tab active-tab px-3 py-1.5 rounded-md flex items-center gap-1.5 text-slate-300 hover:text-white transition whitespace-nowrap bg-cockpit-800 border border-cyan-500/40 text-cyan-300" data-tab="ops">
+        <span class="text-cyan-400">01</span> COMMAND OPS
+      </button>
+      <button onclick="switchTab('roster')" class="nav-tab px-3 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-white transition whitespace-nowrap border border-transparent hover:border-slate-700" data-tab="roster">
+        <span class="text-cyan-400">02</span> PILOT ROSTER
+      </button>
+      <button onclick="switchTab('hangar')" class="nav-tab px-3 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-white transition whitespace-nowrap border border-transparent hover:border-slate-700" data-tab="hangar">
+        <span class="text-cyan-400">03</span> FLEET & DEPOT
+      </button>
+      <button onclick="switchTab('routine')" class="nav-tab px-3 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-white transition whitespace-nowrap border border-transparent hover:border-slate-700" data-tab="routine">
+        <span class="text-cyan-400">04</span> CHOREOGRAPHER
+      </button>
+      <button onclick="switchTab('tour')" class="nav-tab px-3 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-white transition whitespace-nowrap border border-transparent hover:border-slate-700" data-tab="tour">
+        <span class="text-cyan-400">05</span> TOUR & AIR SHOWS
+      </button>
+      <button onclick="switchTab('sponsors')" class="nav-tab px-3 py-1.5 rounded-md flex items-center gap-1.5 text-slate-400 hover:text-white transition whitespace-nowrap border border-transparent hover:border-slate-700" data-tab="sponsors">
+        <span class="text-cyan-400">06</span> LEDGER & CONTRACTS
+      </button>
+      <button onclick="switchTab('manual')" class="nav-tab px-3 py-1.5 rounded-md flex items-center gap-1.5 text-amberhud/80 hover:text-amberhud transition whitespace-nowrap border border-amberhud/20" data-tab="manual">
+        <span class="text-amberhud">07</span> NATOPS / FLIGHT MANUAL
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto p-3 sm:p-6 space-y-6">
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+    <!-- ========================================================= -->
+    <!-- TAB 1: SQUADRON OPERATIONS & READINESS                    -->
+    <!-- ========================================================= -->
+    <section id="tab-ops" class="tab-content space-y-6">
+      <!-- Headquarters Status Banner -->
+      <div class="hud-border glass-panel rounded-xl p-4 sm:p-6 relative overflow-hidden">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono tracking-widest font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">MILITARY FLIGHT DEMONSTRATION WING</span>
+              <span id="badge-winter-status" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-950 text-amberhud border border-amber-800">WINTER WORKUPS IN PROGRESS</span>
+            </div>
+            <h1 class="text-xl sm:text-2xl font-hud font-bold text-white tracking-wide flex items-center gap-2">
+              <span id="hq-banner-name">THUNDER CREST DEMONSTRATION SQUADRON</span>
+            </h1>
+            <p id="hq-location-desc" class="text-slate-400 text-xs sm:text-sm mt-1 max-w-2xl font-mono">
+              Operating out of NAF El Centro / Nellis Test Range. Conducting rigorous 6-ship formation alignment drills, inverted solo calibration, and FAA aerobatic box certification.
+            </p>
+          </div>
+
+          <!-- Ops Action Hub -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="advanceWeek()" class="touch-target px-4 py-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 font-hud font-bold text-sm tracking-wider text-white shadow-lg shadow-emerald-900/40 border border-emerald-400/40 flex items-center gap-2 active:scale-95 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+              <span>ADVANCE WEEK</span>
+            </button>
+            <button onclick="openCheckrideModal()" id="btn-cert-check" class="touch-target px-4 py-2.5 rounded-lg bg-cockpit-800 hover:bg-cockpit-700 text-amberhud font-hud font-bold text-xs tracking-wider border border-amberhud/50 shadow flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span>FAA/DOD CHECKRIDE</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Season Progress Timeline -->
+        <div class="mt-4 pt-4 border-t border-slate-800/80">
+          <div class="flex justify-between text-xs font-mono mb-1.5">
+            <span class="text-slate-400">ANNUAL CAMPAIGN PROGRESS</span>
+            <span id="campaign-progress-txt" class="text-cyan-400 font-bold">Week 1 of 36 (Winter Workups)</span>
+          </div>
+          <div class="w-full h-2.5 bg-cockpit-950 rounded-full overflow-hidden border border-slate-800">
+            <div id="campaign-progress-bar" class="h-full bg-gradient-to-r from-cyan-500 via-amber-500 to-emerald-400 transition-all duration-500" style="width: 3%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vital Squadron Gauges -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Proficiency & Mishap Metric -->
+        <div class="hud-border glass-panel rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-hud font-bold text-sm tracking-wider text-cyan-300">FORMATION PROFICIENCY</h3>
+            <span id="hq-proficiency-val" class="font-mono text-xs font-bold text-cyan-400">32%</span>
+          </div>
+          <div class="w-full h-2 bg-cockpit-950 rounded-full overflow-hidden">
+            <div id="hq-proficiency-bar" class="h-full bg-cyan-400 transition-all" style="width: 32%"></div>
+          </div>
+          <div class="text-xs text-slate-400 font-mono space-y-1">
+            <div class="flex justify-between">
+              <span>Mishap Probability:</span>
+              <span id="hq-mishap-risk" class="text-warningred font-bold">14.8% (HIGH RISK)</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Sorties Flown This Winter:</span>
+              <span id="hq-sorties-count" class="text-white font-bold">4 / 65 Target</span>
+            </div>
+            <div class="flex justify-between">
+              <span>G-Tolerance Average:</span>
+              <span id="hq-avg-gtol" class="text-amberhud font-bold">8.1 Gs</span>
+            </div>
+          </div>
+          <div class="pt-2 border-t border-slate-800 flex gap-2">
+            <button onclick="flyTrainingSortie('formation')" class="flex-1 py-1.5 rounded bg-cockpit-800 hover:bg-cyan-900/50 border border-cyan-500/30 text-cyan-300 text-xs font-mono font-semibold">
+              FLY 6-SHIP DIAMOND
+            </button>
+            <button onclick="flyTrainingSortie('solos')" class="flex-1 py-1.5 rounded bg-cockpit-800 hover:bg-amber-900/50 border border-amberhud/30 text-amberhud text-xs font-mono font-semibold">
+              FLY OPPOSING SOLOS
+            </button>
+          </div>
+        </div>
+
+        <!-- Fleet Health & Airworthiness Status -->
+        <div class="hud-border glass-panel rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-hud font-bold text-sm tracking-wider text-amberhud">FLEET READINESS (MC RATE)</h3>
+            <span id="hq-fleet-readiness" class="font-mono text-xs font-bold text-amberhud">87%</span>
+          </div>
+          <div class="w-full h-2 bg-cockpit-950 rounded-full overflow-hidden">
+            <div id="hq-fleet-bar" class="h-full bg-amberhud transition-all" style="width: 87%"></div>
+          </div>
+          <div class="text-xs text-slate-400 font-mono space-y-1">
+            <div class="flex justify-between">
+              <span>Mission Capable Status:</span>
+              <span id="hq-fleet-breakdown" class="text-white font-bold">6 FMC / 2 PMC / 0 NMC</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Average Engine Health:</span>
+              <span id="hq-engine-health" class="text-emerald-400 font-bold">92% Core Life</span>
+            </div>
+            <div class="flex justify-between">
+              <span>C-130 / C-17 Logistics Transport:</span>
+              <span class="text-cyan-300 font-bold">EN ROUTE / PACKED</span>
+            </div>
+          </div>
+          <div class="pt-2 border-t border-slate-800 flex gap-2">
+            <button onclick="performFleetMaintenance()" class="w-full py-1.5 rounded bg-cockpit-800 hover:bg-slate-700 border border-slate-600 text-slate-200 text-xs font-mono font-semibold">
+              FULL SQUADRON DEPOT OVERHAUL ($45,000)
+            </button>
+          </div>
+        </div>
+
+        <!-- Public Prestige & Financial Standing -->
+        <div class="hud-border glass-panel rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-hud font-bold text-sm tracking-wider text-goldfoil">PUBLIC PRESTIGE & MORALE</h3>
+            <span id="hq-morale-val" class="font-mono text-xs font-bold text-goldfoil">85%</span>
+          </div>
+          <div class="w-full h-2 bg-cockpit-950 rounded-full overflow-hidden">
+            <div id="hq-morale-bar" class="h-full bg-goldfoil transition-all" style="width: 85%"></div>
+          </div>
+          <div class="text-xs text-slate-400 font-mono space-y-1">
+            <div class="flex justify-between">
+              <span>Total Air Show Fans Reached:</span>
+              <span id="hq-total-attendance" class="text-white font-bold">0 Fans</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Weekly Net Burn Rate:</span>
+              <span id="hq-burn-rate" class="text-slate-300 font-bold">$68,500 / wk</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Hull Insurance Status:</span>
+              <span id="hq-insurance-status" class="text-emerald-400 font-bold">CLEAN RECORD (LOW PREMIUM)</span>
+            </div>
+          </div>
+          <div class="pt-2 border-t border-slate-800 flex gap-2">
+            <button onclick="hostAutographPR()" class="w-full py-1.5 rounded bg-cockpit-800 hover:bg-goldfoil/20 border border-goldfoil/40 text-goldfoil text-xs font-mono font-semibold">
+              HOST VIP & AUTOGRAPH SESSION
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Squadron Teletype Dispatch Log -->
+      <div class="hud-border glass-panel rounded-xl p-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <h2 class="font-hud font-bold text-sm tracking-wider text-cyan-300 uppercase">SQUADRON DISPATCH TELETYPE (EVENT LOG)</h2>
+          </div>
+          <button onclick="clearLogs()" class="text-[11px] font-mono text-slate-500 hover:text-slate-300">CLEAR LOG</button>
+        </div>
+        <div id="squadron-log" class="font-mono text-xs text-slate-300 space-y-1.5 max-h-56 overflow-y-auto pr-2">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- TAB 2: PILOT ROSTER & CREW CHIEF                          -->
+    <!-- ========================================================= -->
+    <section id="tab-roster" class="tab-content hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-hud font-bold text-white tracking-wide">FLIGHT DEMONSTRATION ROSTER</h2>
+          <p class="text-slate-400 text-xs font-mono">The 6 tactical show pilots, narrator/safety officer, and maintenance crew chief. G-strain and fatigue directly degrade formation tightess.</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="conductTeamBriefing()" class="px-3 py-1.5 rounded bg-cockpit-800 hover:bg-cockpit-700 border border-cyan-500/40 text-cyan-300 text-xs font-mono font-semibold">
+            CHALK TALK / BRIEF (+Morale)
+          </button>
+          <button onclick="grantCrewRest()" class="px-3 py-1.5 rounded bg-cockpit-800 hover:bg-cockpit-700 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-semibold">
+            MANDATORY CREW REST (-Fatigue)
+          </button>
+        </div>
+      </div>
+
+      <!-- Pilot Cards Grid -->
+      <div id="roster-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Rendered by renderRoster() -->
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- TAB 3: JET HANGAR & ADVANCED FLEET MAINTENANCE            -->
+    <!-- ========================================================= -->
+    <section id="tab-hangar" class="tab-content hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-hud font-bold text-white tracking-wide">AIRCRAFT FLEET & DEPOT MAINTENANCE ENGINE</h2>
+          <p class="text-slate-400 text-xs font-mono">Track FMC (Fully Mission Capable), PMC, and NMC grounded statuses. Replace worn turbine engines and swap spare aircraft onto the flight line.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="purchaseJP8Fuel()" class="px-3 py-1.5 rounded bg-cockpit-800 hover:bg-cyan-900/40 border border-cyan-500/40 text-cyan-300 text-xs font-mono">
+            BUY 25,000 GAL JP-8 ($85,000)
+          </button>
+          <button onclick="openChangeJetModal()" class="px-3 py-1.5 rounded bg-cockpit-800 hover:bg-amber-900/40 border border-amberhud/40 text-amberhud text-xs font-mono">
+            CONVERT SQUADRON JET MODEL
+          </button>
+        </div>
+      </div>
+
+      <!-- Active Jet Model Banner -->
+      <div class="hud-border glass-panel rounded-xl p-4 sm:p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-1 space-y-3">
+          <div class="text-xs font-mono text-cyan-400 font-bold uppercase tracking-widest">SQUADRON FLIGHT MODEL</div>
+          <h3 id="hangar-jet-name" class="text-2xl font-hud font-bold text-white">F-16C Fighting Falcon</h3>
+          <p id="hangar-jet-desc" class="text-slate-400 text-xs leading-relaxed">
+            Lightweight, fly-by-wire fighter renowned for its 9G instantaneous turn capability, unobstructed bubble canopy, and iconic Thunderbirds heritage.
+          </p>
+          <div class="pt-2">
+            <span class="inline-block px-2 py-1 rounded bg-cockpit-900 text-xs font-mono text-amberhud border border-amberhud/30">
+              SMOKE GENERATOR: DIESEL INJECTION + RED/WHITE/BLUE DYE
+            </span>
+          </div>
+        </div>
+
+        <!-- Jet Specs Comparison -->
+        <div class="md:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          <div class="bg-cockpit-950/70 p-3 rounded-lg border border-slate-800">
+            <span class="text-[10px] font-mono text-slate-400 block">MAX G-LOAD</span>
+            <span id="hangar-stat-g" class="text-xl font-hud font-bold text-amberhud">+9.0 / -3.0 G</span>
+          </div>
+          <div class="bg-cockpit-950/70 p-3 rounded-lg border border-slate-800">
+            <span class="text-[10px] font-mono text-slate-400 block">THRUST / WEIGHT</span>
+            <span id="hangar-stat-tw" class="text-xl font-hud font-bold text-cyan-300">1.10 : 1</span>
+          </div>
+          <div class="bg-cockpit-950/70 p-3 rounded-lg border border-slate-800">
+            <span class="text-[10px] font-mono text-slate-400 block">HOURLY COST</span>
+            <span id="hangar-stat-cost" class="text-xl font-hud font-bold text-emerald-400">$8,200/hr</span>
+          </div>
+          <div class="bg-cockpit-950/70 p-3 rounded-lg border border-slate-800">
+            <span class="text-[10px] font-mono text-slate-400 block">PRESTIGE MULTIPLIER</span>
+            <span id="hangar-stat-prestige" class="text-xl font-hud font-bold text-goldfoil">x1.35</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Airframes Inventory Table -->
+      <div class="hud-border glass-panel rounded-xl overflow-hidden">
+        <div class="px-4 py-3 bg-cockpit-900 border-b border-slate-800 flex flex-wrap justify-between items-center gap-2">
+          <h3 class="font-hud font-bold text-sm text-cyan-300">ACTIVE INVENTORY OF AIRFRAMES (8 TOTAL)</h3>
+          <span class="text-xs font-mono text-slate-400">Jets #1 to #6 (Flight Line) • Jet #7 (Narrator/VIP) • Jet #8 (Combat Ready Spare)</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs font-mono">
+            <thead class="bg-cockpit-950/90 text-slate-400 uppercase text-[10px]">
+              <tr>
+                <th class="p-3">Tail / Position</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Airframe Hours</th>
+                <th class="p-3">Engine Core Life</th>
+                <th class="p-3">Structural Fatigue</th>
+                <th class="p-3">Smoke System</th>
+                <th class="p-3 text-right">Maintenance Actions</th>
+              </tr>
+            </thead>
+            <tbody id="airframes-table-body" class="divide-y divide-slate-800/60">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- TAB 4: ROUTINE CHOREOGRAPHER & AGGRESSIVENESS ENGINE      -->
+    <!-- ========================================================= -->
+    <section id="tab-routine" class="tab-content hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-hud font-bold text-white tracking-wide">AIR SHOW ROUTINE CHOREOGRAPHER</h2>
+          <p class="text-slate-400 text-xs font-mono">Sequence maneuvers for Diamond, Solos, and Delta. Longer and more aggressive shows thrill crowds, but compound pilot fatigue and catastrophic mishap odds!</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="presetThunderbirdsRoutine()" class="px-3 py-1.5 rounded bg-cockpit-800 hover:bg-cockpit-700 border border-cyan-500/40 text-cyan-300 text-xs font-mono">
+            PRESET: VIPER DELTA
+          </button>
+          <button onclick="presetBlueAngelsRoutine()" class="px-3 py-1.5 rounded bg-cockpit-800 hover:bg-cockpit-700 border border-blue-500/40 text-blue-300 text-xs font-mono">
+            PRESET: CALYPSO FLEUR
+          </button>
+          <button onclick="presetMaxAggroRoutine()" class="px-3 py-1.5 rounded bg-red-950/80 hover:bg-red-900 border border-red-500/60 text-red-200 text-xs font-mono font-bold">
+            PRESET: MAXIMUM ENVELOPE (9G)
+          </button>
+        </div>
+      </div>
+
+      <!-- Routine Summary Card -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-cockpit-900/90 p-4 rounded-xl border border-slate-800">
+          <span class="text-xs font-mono text-slate-400">ESTIMATED SHOW DURATION</span>
+          <div id="routine-duration" class="text-2xl font-hud font-bold text-white mt-1">38 Mins</div>
+          <span class="text-[10px] text-slate-500">Standard FAA Airspace Window</span>
+        </div>
+        <div class="bg-cockpit-900/90 p-4 rounded-xl border border-slate-800">
+          <span class="text-xs font-mono text-slate-400">CROWD EXCITEMENT INDEX</span>
+          <div id="routine-crowd-score" class="text-2xl font-hud font-bold text-goldfoil mt-1">94 / 100</div>
+          <span class="text-[10px] text-emerald-400">Maximum Gate & Merch Impact</span>
+        </div>
+        <div class="bg-cockpit-900/90 p-4 rounded-xl border border-slate-800">
+          <span class="text-xs font-mono text-slate-400">AGGRESSIVENESS RISK FACTOR</span>
+          <div id="routine-risk-score" class="text-2xl font-hud font-bold text-warningred mt-1">18.4%</div>
+          <span id="routine-risk-label" class="text-[10px] text-amberhud">High Maneuver Complexity</span>
+        </div>
+        <div class="bg-cockpit-900/90 p-4 rounded-xl border border-slate-800">
+          <span class="text-xs font-mono text-slate-400">MIN CEILING REQUIRED</span>
+          <div id="routine-min-ceiling" class="text-2xl font-hud font-bold text-cyan-300 mt-1">8,000 FT</div>
+          <span class="text-[10px] text-cyan-400">Full High Show Capable</span>
+        </div>
+      </div>
+
+      <!-- Drag & Sequence Builder -->
+      <div class="hud-border glass-panel rounded-xl p-4 sm:p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="font-hud font-bold text-base text-cyan-300">ACTIVE FLIGHT CARD (SEQUENCE)</h3>
+          <span class="text-xs font-mono text-slate-400">Total Maneuvers: <span id="routine-maneuver-count" class="text-white font-bold">8</span> (Max 12)</span>
+        </div>
+
+        <div id="choreographed-list" class="space-y-2">
+          <!-- Rendered by renderChoreographer() -->
+        </div>
+
+        <div class="pt-4 border-t border-slate-800">
+          <h4 class="text-xs font-mono font-bold text-slate-300 mb-2">ADD SIGNATURE MANEUVER FROM PLAYBOOK:</h4>
+          <div id="maneuver-library" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+            <!-- Rendered by renderManeuverLibrary() -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- TAB 5: TOUR SCHEDULE & ATTENDANCE TRACKER                 -->
+    <!-- ========================================================= -->
+    <section id="tab-tour" class="tab-content hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-hud font-bold text-white tracking-wide">NATIONAL AIR SHOW TOUR (WEEKS 11–34)</h2>
+          <p class="text-slate-400 text-xs font-mono">Headlining America's grandest aviation venues: Columbus Air Show, Dayton Air Show, Oshkosh EAA AirVenture, Fleet Week San Francisco, and Pensacola Homecoming.</p>
+        </div>
+        <div class="text-xs font-mono text-slate-400">
+          Current Operating Location: <span id="tour-current-location" class="text-cyan-300 font-bold">NAF El Centro (Winter Camp)</span>
+        </div>
+      </div>
+
+      <!-- Schedule & Past Attendance Table -->
+      <div class="hud-border glass-panel rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs font-mono">
+            <thead class="bg-cockpit-950/90 text-slate-400 uppercase text-[10px]">
+              <tr>
+                <th class="p-3">Week</th>
+                <th class="p-3">Air Show Event & City</th>
+                <th class="p-3">Expected / Recorded Crowd</th>
+                <th class="p-3">Purse + Gate Cut</th>
+                <th class="p-3">Net Show Profit/Loss</th>
+                <th class="p-3">Status</th>
+                <th class="p-3 text-right">Operation</th>
+              </tr>
+            </thead>
+            <tbody id="tour-table-body" class="divide-y divide-slate-800">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- TAB 6: FINANCIAL LEDGER & SPONSORS                        -->
+    <!-- ========================================================= -->
+    <section id="tab-sponsors" class="tab-content hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-hud font-bold text-white tracking-wide">SQUADRON TREASURY, EXPENSES & INSURANCE LEDGER</h2>
+          <p class="text-slate-400 text-xs font-mono">Manage operating revenue, gate percentages, merchandise concessions, corporate aerospace sponsors, Jet-A fuel expenses, and hull insurance premiums.</p>
+        </div>
+      </div>
+
+      <!-- Financial Balance Sheet Overview -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="hud-border glass-panel p-4 rounded-xl">
+          <div class="text-xs font-mono text-slate-400">TREASURY BALANCE</div>
+          <div id="fin-treasury" class="text-2xl font-hud font-bold text-emerald-400 mt-1">$4,850,000</div>
+          <div class="text-[10px] font-mono text-slate-500 mt-1">Defense Appropriation + Commercial Purse</div>
+        </div>
+        <div class="hud-border glass-panel p-4 rounded-xl">
+          <div class="text-xs font-mono text-slate-400">PROJECTED WEEKLY REVENUE</div>
+          <div id="fin-weekly-rev" class="text-2xl font-hud font-bold text-cyan-300 mt-1">+$115,000</div>
+          <div class="text-[10px] font-mono text-slate-500 mt-1">Sponsorship stipends + merch concessions</div>
+        </div>
+        <div class="hud-border glass-panel p-4 rounded-xl">
+          <div class="text-xs font-mono text-slate-400">PROJECTED WEEKLY EXPENSES</div>
+          <div id="fin-weekly-exp" class="text-2xl font-hud font-bold text-warningred mt-1">-$68,500</div>
+          <div class="text-[10px] font-mono text-slate-500 mt-1">Jet fuel + 40-man crew per-diem + spares</div>
+        </div>
+        <div class="hud-border glass-panel p-4 rounded-xl">
+          <div class="text-xs font-mono text-slate-400">ANNUAL HULL INSURANCE</div>
+          <div id="fin-insurance-rate" class="text-2xl font-hud font-bold text-amberhud mt-1">$12,000/wk</div>
+          <div class="text-[10px] font-mono text-slate-500 mt-1">Spikes if incidents or crashes occur</div>
+        </div>
+      </div>
+
+      <!-- Sponsors & Contracts -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Active Sponsors -->
+        <div class="hud-border glass-panel rounded-xl p-4 space-y-3">
+          <h3 class="font-hud font-bold text-sm text-cyan-300">ACTIVE SPONSORSHIP CONTRACTS</h3>
+          <div id="active-sponsors-list" class="space-y-2">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Available Bids -->
+        <div class="hud-border glass-panel rounded-xl p-4 space-y-3">
+          <h3 class="font-hud font-bold text-sm text-amberhud">AVAILABLE SPONSORSHIP PROPOSALS</h3>
+          <div id="available-sponsors-list" class="space-y-2">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- TAB 7: NATOPS / AFMAN FLIGHT OPS MANUAL                   -->
+    <!-- ========================================================= -->
+    <section id="tab-manual" class="tab-content hidden space-y-6">
+      <div class="hud-border glass-panel rounded-xl p-6 space-y-6">
+        <div class="border-b border-slate-800 pb-4">
+          <span class="text-xs font-mono text-amberhud font-bold tracking-widest uppercase">STANDARD OPERATING PROCEDURES (SOP)</span>
+          <h2 class="text-2xl font-hud font-bold text-white mt-1">DEMONSTRATION PILOT'S NATOPS / AFMAN CHECKLIST</h2>
+          <p class="text-slate-400 text-xs font-mono mt-1">FAA Order 8900.1 / USAF 11-2F-16 Vol 3 / USN OPNAV 3710 Demonstration Rules</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-slate-300 leading-relaxed font-mono">
+          <div class="space-y-2 bg-cockpit-950/60 p-4 rounded-lg border border-slate-800">
+            <h3 class="font-hud font-bold text-sm text-cyan-400">1. WEATHER PROFILES (HIGH, LOW, FLAT)</h3>
+            <p><b class="text-white">High Show:</b> Ceiling ≥ 8,000 ft, visibility ≥ 3 nm. Authorizes full vertical dimension (Bomb Burst w/ vertical crosses, Fleur-de-Lis, High Alpha loops).</p>
+            <p><b class="text-white">Low Show:</b> Ceiling 3,500 ft to 8,000 ft. Pure vertical loops eliminated. Rolling maneuvers (Delta Roll, Cloverleaf, Minimum Radius Turns) remain authorized.</p>
+            <p><b class="text-white">Flat Show:</b> Ceiling 1,500 ft to 3,500 ft. Zero vertical or inverted maneuvers permitted over show center. Strictly horizontal flybys, echelon passes, and sneak passes.</p>
+          </div>
+
+          <div class="space-y-2 bg-cockpit-950/60 p-4 rounded-lg border border-slate-800">
+            <h3 class="font-hud font-bold text-sm text-amberhud">2. CROWD LINE & FAA 500-FT BOX</h3>
+            <p><b class="text-white">Aerobatic Box:</b> Cat III jet demonstrations must maintain at least 1,500 feet of lateral separation from the primary spectator fence at all times.</p>
+            <p><b class="text-white">Velocity Vector Rule:</b> No aircraft energy vector may point directly toward spectators while in maneuvering flight.</p>
+            <p><b class="text-white">"KNOCK IT OFF" Call:</b> If any pilot experiences spatial disorientation, G-LOC signs, bird strike, or engine stall, ANY member can call "Knock It Off!" The entire demonstration pauses immediately.</p>
+          </div>
+
+          <div class="space-y-2 bg-cockpit-950/60 p-4 rounded-lg border border-slate-800">
+            <h3 class="font-hud font-bold text-sm text-goldfoil">3. MAINTENANCE READINESS GRADES</h3>
+            <p><b class="text-emerald-400 font-bold">FMC (Fully Mission Capable):</b> Systems 100% operational, engine core clean, smoke injector calibrated.</p>
+            <p><b class="text-amber-400 font-bold">PMC (Partially Mission Capable):</b> Minor snag (smoke pod pressure drop, UHF aux radio static). Allowed to fly non-solo roles or spare position.</p>
+            <p><b class="text-red-400 font-bold">NMC (Non-Mission Capable):</b> Grounded. Hydraulic leak, turbine blade crack, or severe airframe stress. Must undergo depot repair or full engine replacement.</p>
+          </div>
+        </div>
+
+        <!-- Maneuver Glossary Table -->
+        <div class="pt-4 border-t border-slate-800">
+          <h3 class="font-hud font-bold text-sm text-white mb-3">AUTHORIZED MANEUVER PERFORMANCE MATRIX</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs font-mono">
+              <thead class="bg-cockpit-950 text-slate-400 text-[10px]">
+                <tr>
+                  <th class="p-2">Maneuver</th>
+                  <th class="p-2">Role</th>
+                  <th class="p-2">Min. Ceiling</th>
+                  <th class="p-2">Peak G</th>
+                  <th class="p-2">Excitement</th>
+                  <th class="p-2">Stress/Risk</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800 text-slate-300">
+                <tr>
+                  <td class="p-2 font-bold text-cyan-300">Diamond Takeoff & 60-Deg Bank</td>
+                  <td class="p-2">Diamond (1-4)</td>
+                  <td class="p-2">3,500 ft</td>
+                  <td class="p-2 text-amberhud">4.5 G</td>
+                  <td class="p-2 text-goldfoil">78 pts</td>
+                  <td class="p-2 text-slate-400">Low (8%)</td>
+                </tr>
+                <tr>
+                  <td class="p-2 font-bold text-cyan-300">Diamond 360 Turn</td>
+                  <td class="p-2">Diamond (1-4)</td>
+                  <td class="p-2">1,500 ft</td>
+                  <td class="p-2 text-amberhud">5.5 G</td>
+                  <td class="p-2 text-goldfoil">82 pts</td>
+                  <td class="p-2 text-slate-400">Med (10%)</td>
+                </tr>
+                <tr>
+                  <td class="p-2 font-bold text-cyan-300">Calypso Pass (Canopy-to-Canopy)</td>
+                  <td class="p-2">Solos (#5 & #6)</td>
+                  <td class="p-2">2,500 ft</td>
+                  <td class="p-2 text-amberhud">3.5 G</td>
+                  <td class="p-2 text-goldfoil">94 pts</td>
+                  <td class="p-2 text-warningred">High (16%)</td>
+                </tr>
+                <tr>
+                  <td class="p-2 font-bold text-cyan-300">Mach 0.96 Sneak Pass</td>
+                  <td class="p-2">Lead Solo (#5)</td>
+                  <td class="p-2">1,500 ft</td>
+                  <td class="p-2 text-amberhud">6.5 G</td>
+                  <td class="p-2 text-goldfoil">98 pts</td>
+                  <td class="p-2 text-slate-400">Med (12%)</td>
+                </tr>
+                <tr>
+                  <td class="p-2 font-bold text-cyan-300">Fleur-de-Lis 4-Way Vertical Break</td>
+                  <td class="p-2">Formation (1-5)</td>
+                  <td class="p-2 text-warningred font-bold">8,000 ft</td>
+                  <td class="p-2 text-amberhud">6.8 G</td>
+                  <td class="p-2 text-goldfoil">96 pts</td>
+                  <td class="p-2 text-amberhud">High (15%)</td>
+                </tr>
+                <tr>
+                  <td class="p-2 font-bold text-cyan-300">Bomb Burst with Vertical Cross</td>
+                  <td class="p-2">Full 6-Ship</td>
+                  <td class="p-2 text-warningred font-bold">8,000 ft</td>
+                  <td class="p-2 text-warningred font-bold">7.5 G</td>
+                  <td class="p-2 text-goldfoil">100 pts</td>
+                  <td class="p-2 text-warningred font-bold">Extreme (18%)</td>
+                </tr>
+                <tr>
+                  <td class="p-2 font-bold text-cyan-300">Minimum Radius 9G Turn</td>
+                  <td class="p-2">Lead Solo (#5)</td>
+                  <td class="p-2">2,000 ft</td>
+                  <td class="p-2 text-warningred font-bold">9.0 G</td>
+                  <td class="p-2 text-goldfoil">95 pts</td>
+                  <td class="p-2 text-warningred font-bold">Extreme (20%)</td>
+                </tr>
+                <tr>
+                  <td class="p-2 font-bold text-cyan-300">Cobra Drift / Aerodynamic Stall</td>
+                  <td class="p-2">Solos (#5 & #6)</td>
+                  <td class="p-2">3,000 ft</td>
+                  <td class="p-2 text-emerald-400">2.5 G</td>
+                  <td class="p-2 text-goldfoil">93 pts</td>
+                  <td class="p-2 text-amberhud">High (15%)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-800 flex justify-end">
+          <button onclick="resetGamePrompt()" class="px-3 py-2 rounded bg-red-950/60 hover:bg-red-900 border border-red-700/60 text-red-300 text-xs font-mono">
+            RESET ALL SQUADRON DATA (NEW GAME)
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: ⚡ GOD MODE / DEV TESTING SUITE                      -->
+  <!-- ========================================================= -->
+  <div id="modal-godmode" class="fixed inset-0 z-50 bg-cockpit-950/90 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div class="hud-amber-border glass-panel rounded-2xl w-full max-w-2xl p-5 border-amberhud/50 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-amberhud/30 pb-3">
+        <div class="flex items-center gap-2 text-amberhud">
+          <span class="text-xl">⚡</span>
+          <div>
+            <h3 class="font-hud font-bold text-lg text-white">GOD MODE / DEV TESTING SUITE</h3>
+            <span class="text-[10px] font-mono text-amberhud">Instant debug injection & catastrophic stress testing</span>
+          </div>
+        </div>
+        <button onclick="toggleGodModeDrawer()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+        <!-- Budget Cheat -->
+        <button onclick="godAddFunds()" class="p-3 rounded-lg bg-cockpit-900 hover:bg-emerald-950/50 border border-emerald-500/40 text-left transition">
+          <div class="text-emerald-400 font-bold flex items-center justify-between">
+            <span>+ $10,000,000 TREASURY</span>
+            <span>💵</span>
+          </div>
+          <span class="text-[10px] text-slate-400 block mt-1">Inject massive defense contractor grant for unbounded procurement.</span>
+        </button>
+
+        <!-- Max Pilots -->
+        <button onclick="godMaxPilots()" class="p-3 rounded-lg bg-cockpit-900 hover:bg-cyan-950/50 border border-cyan-500/40 text-left transition">
+          <div class="text-cyan-400 font-bold flex items-center justify-between">
+            <span>MAX OUT PILOTS (100%)</span>
+            <span>⭐</span>
+          </div>
+          <span class="text-[10px] text-slate-400 block mt-1">Set all 8 officers to 99% Precision, 10G Tolerance, 0% Fatigue.</span>
+        </button>
+
+        <!-- Instant Cert -->
+        <button onclick="godInstantCert()" class="p-3 rounded-lg bg-cockpit-900 hover:bg-amber-950/50 border border-amberhud/40 text-left transition">
+          <div class="text-amberhud font-bold flex items-center justify-between">
+            <span>INSTANT FAA/DOD CERT</span>
+            <span>📜</span>
+          </div>
+          <span class="text-[10px] text-slate-400 block mt-1">Bypass winter workup gates and instantly certify for tour.</span>
+        </button>
+
+        <!-- Repair & Engine Overhaul -->
+        <button onclick="godRepairFleet()" class="p-3 rounded-lg bg-cockpit-900 hover:bg-blue-950/50 border border-blue-500/40 text-left transition">
+          <div class="text-blue-400 font-bold flex items-center justify-between">
+            <span>OVERHAUL ALL ENGINES & FLEET</span>
+            <span>🔧</span>
+          </div>
+          <span class="text-[10px] text-slate-400 block mt-1">Reset all 8 airframes to 100% FMC, 100% Engine Core, 0 Fatigue.</span>
+        </button>
+
+        <!-- Force Weather: Clear High Show -->
+        <button onclick="godForceWeather('high')" class="p-3 rounded-lg bg-cockpit-900 hover:bg-slate-800 border border-slate-700 text-left transition">
+          <div class="text-cyan-300 font-bold">FORCE WEATHER: HIGH SHOW</div>
+          <span class="text-[10px] text-slate-400 block mt-1">Clear skies (15,000 ft ceiling) for full vertical Bomb Burst.</span>
+        </button>
+
+        <!-- Force Weather: Overcast Low Show -->
+        <button onclick="godForceWeather('low')" class="p-3 rounded-lg bg-cockpit-900 hover:bg-slate-800 border border-slate-700 text-left transition">
+          <div class="text-amber-300 font-bold">FORCE WEATHER: LOW SHOW</div>
+          <span class="text-[10px] text-slate-400 block mt-1">Solid cloud deck at 4,500 ft. Eliminates vertical loops.</span>
+        </button>
+
+        <!-- Force Weather: Deck Flat Show -->
+        <button onclick="godForceWeather('flat')" class="p-3 rounded-lg bg-cockpit-900 hover:bg-slate-800 border border-slate-700 text-left transition">
+          <div class="text-orange-400 font-bold">FORCE WEATHER: FLAT SHOW</div>
+          <span class="text-[10px] text-slate-400 block mt-1">Heavy overcast at 2,000 ft. Pure horizontal rolling passes.</span>
+        </button>
+
+        <!-- Skip to Air Show Week -->
+        <button onclick="godSkipToTour()" class="p-3 rounded-lg bg-cockpit-900 hover:bg-slate-800 border border-slate-700 text-left transition">
+          <div class="text-purple-400 font-bold">WARP TO SHOW CIRCUIT (WK 16)</div>
+          <span class="text-[10px] text-slate-400 block mt-1">Warp calendar to Columbus / Dayton Air Show circuit.</span>
+        </button>
+      </div>
+
+      <!-- Destructive Stress Testing Section -->
+      <div class="pt-3 border-t border-slate-800 space-y-2 font-mono text-xs">
+        <h4 class="text-warningred font-bold flex items-center gap-1.5">
+          <span>⚠️ EMERGENCY & CRASH DISASTER SIMULATION (TESTING ONLY)</span>
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <button onclick="godTriggerEmergency()" class="p-2.5 rounded bg-amber-950/60 hover:bg-amber-900 border border-amber-600/60 text-amber-200 text-left font-bold">
+            🚨 TRIGGER MID-AIR EMERGENCY
+          </button>
+          <button onclick="godTriggerCatastrophicCrash()" class="p-2.5 rounded bg-red-950/80 hover:bg-red-900 border border-red-500/80 text-red-200 text-left font-bold">
+            💥 TRIGGER JET CRASH & EJECTION
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: AVIATION PHOTOGRAPHER DISCLAIMER                   -->
+  <!-- ========================================================= -->
+  <div id="modal-disclaimer" class="fixed inset-0 z-50 bg-cockpit-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="hud-amber-border glass-panel rounded-2xl w-full max-w-xl p-6 border-amberhud/40 space-y-4">
+      <div class="flex items-center gap-2 text-amberhud">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <h3 class="font-hud font-bold text-lg text-white">CREATOR'S DISCLAIMER & FAN TRIBUTE</h3>
+      </div>
+      <div class="text-xs font-mono text-slate-300 space-y-3 leading-relaxed">
+        <p class="p-3 bg-cockpit-950 rounded border border-amber-500/30 text-amber-200">
+          <b>DISCLAIMER:</b> This simulation is an independent, non-commercial fan tribute created by an avid aviation photographer and air show demonstration team enthusiast.
+        </p>
+        <p>
+          It is <b>NOT</b> affiliated with, sponsored by, authorized, or endorsed by the United States Department of Defense (DoD), the United States Navy (USN), the United States Air Force (USAF), the Blue Angels, the Thunderbirds, the FAA, or any aircraft manufacturers (such as Lockheed Martin, Boeing, Northrop Grumman, or Mikoyan).
+        </p>
+        <p>
+          All aircraft designations, military ranks, maneuver titles, and historical tributes belong to their respective copyright and trademark holders. This simulator was built out of deep passion and respect for military aviators, tactical flight demo crews, and aircraft maintainers worldwide.
+        </p>
+      </div>
+      <div class="flex justify-end pt-2">
+        <button onclick="closeDisclaimerModal()" class="px-5 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-hud font-bold text-xs tracking-wider">
+          ROGER / ACKNOWLEDGE
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: LIVE AIR SHOW SIMULATOR                            -->
+  <!-- ========================================================= -->
+  <div id="sim-modal" class="fixed inset-0 z-50 bg-cockpit-950/95 backdrop-blur-md hidden flex items-center justify-center p-2 sm:p-6 overflow-y-auto">
+    <div class="hud-border glass-panel rounded-2xl w-full max-w-4xl p-4 sm:p-6 flex flex-col max-h-[92vh] border-cyan-500/40 shadow-2xl">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
+          <div>
+            <h2 id="sim-title" class="font-hud font-bold text-base sm:text-lg text-white tracking-wide">LIVE DEMONSTRATION SIMULATOR</h2>
+            <div id="sim-subtitle" class="font-mono text-xs text-cyan-400">Dayton Air Show • Wright-Patterson AFB</div>
+          </div>
+        </div>
+        <div class="text-right font-mono text-xs">
+          <span class="text-slate-400">WEATHER: </span>
+          <span id="sim-weather" class="text-emerald-400 font-bold">HIGH SHOW (12,000 FT CLR)</span>
+        </div>
+      </div>
+
+      <!-- Telemetry Dashboard -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 my-3 text-center font-mono">
+        <div class="bg-cockpit-900/80 p-2 rounded border border-slate-800">
+          <span class="text-[10px] text-slate-400 block">INDICATED AIRSPEED</span>
+          <span id="sim-telemetry-speed" class="text-lg font-bold text-cyan-300">420 KTS</span>
+        </div>
+        <div class="bg-cockpit-900/80 p-2 rounded border border-slate-800">
+          <span class="text-[10px] text-slate-400 block">PEAK G-LOAD</span>
+          <span id="sim-telemetry-g" class="text-lg font-bold text-amberhud">6.8 G</span>
+        </div>
+        <div class="bg-cockpit-900/80 p-2 rounded border border-slate-800">
+          <span class="text-[10px] text-slate-400 block">WINGTIP SEPARATION</span>
+          <span id="sim-telemetry-tightness" class="text-lg font-bold text-emerald-400">18 INCHES</span>
+        </div>
+        <div class="bg-cockpit-900/80 p-2 rounded border border-slate-800">
+          <span class="text-[10px] text-slate-400 block">CROWD DECIBEL ROAR</span>
+          <span id="sim-telemetry-crowd" class="text-lg font-bold text-goldfoil">88%</span>
+        </div>
+      </div>
+
+      <!-- Maneuver Progress bar -->
+      <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800 my-1">
+        <div id="sim-progress-bar" class="h-full bg-gradient-to-r from-cyan-400 to-amberhud transition-all duration-300" style="width: 0%"></div>
+      </div>
+
+      <!-- Telemetry Radio Console Box -->
+      <div id="sim-console" class="flex-grow bg-cockpit-950 p-4 rounded-xl border border-slate-800/80 font-mono text-xs text-slate-200 overflow-y-auto my-3 space-y-2 min-h-[220px] max-h-[320px]">
+        <!-- Dynamic radio chatter -->
+      </div>
+
+      <!-- In-Flight Emergency Decision Box -->
+      <div id="sim-emergency-box" class="hidden bg-red-950/90 border border-red-500/80 p-3 rounded-xl mb-3 space-y-2">
+        <div class="flex items-center gap-2 text-warningred font-hud font-bold text-sm tracking-wider">
+          <svg class="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          <span id="emergency-title">WARNING: IN-FLIGHT ABNORMAL EMERGENCY</span>
+        </div>
+        <p id="emergency-desc" class="text-xs font-mono text-red-200 leading-tight">Smoke system blowout on #4 Slot. Smoke trailing unevenly across crowd line.</p>
+        <div id="emergency-choices" class="flex flex-wrap gap-2 pt-1">
+          <!-- Action options -->
+        </div>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="flex items-center justify-between border-t border-slate-800 pt-3">
+        <span id="sim-status-label" class="text-xs font-mono text-slate-400">Live Demonstration in Progress...</span>
+        <button id="sim-action-btn" onclick="nextSimStep()" class="px-5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-hud font-bold text-xs tracking-wider border border-cyan-400 flex items-center gap-1.5 shadow-lg shadow-cyan-600/30">
+          <span>NEXT MANEUVER</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: FLEET JET SWAP & RE-EQUIP                          -->
+  <!-- ========================================================= -->
+  <div id="modal-jet-swap" class="fixed inset-0 z-50 bg-cockpit-950/90 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="hud-border glass-panel rounded-2xl w-full max-w-3xl p-6 border-cyan-500/40">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+        <div>
+          <h3 class="font-hud font-bold text-lg text-white">SELECT FLEET AIRCRAFT PLATFORM</h3>
+          <p class="text-xs font-mono text-slate-400">All 8 squadron airframes will be re-equipped with this platform.</p>
+        </div>
+        <button onclick="closeJetModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+      </div>
+      <div id="jet-selection-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-1">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: CHECKRIDE / CERTIFICATION                          -->
+  <!-- ========================================================= -->
+  <div id="modal-checkride" class="fixed inset-0 z-50 bg-cockpit-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="hud-border glass-panel rounded-2xl w-full max-w-md p-6 border-amberhud/40 space-y-4">
+      <div class="flex items-center gap-2 text-amberhud">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <h3 class="font-hud font-bold text-lg">ANNUAL FAA & DOD SHOW LINE CERTIFICATION</h3>
+      </div>
+      <p class="text-xs font-mono text-slate-300 leading-relaxed">
+        Before entering the national air show circuit, the Wing Commander and FAA Aerobatic Inspector must approve your 6-ship routine. Requirements:
+      </p>
+      <ul class="text-xs font-mono space-y-1.5 text-slate-400 bg-cockpit-950 p-3 rounded border border-slate-800">
+        <li class="flex items-center justify-between">
+          <span>Target Formation Proficiency:</span>
+          <span class="text-cyan-400 font-bold">≥ 60%</span>
+        </li>
+        <li class="flex items-center justify-between">
+          <span>Winter Sorties Flown:</span>
+          <span class="text-cyan-400 font-bold">≥ 18 Sorties</span>
+        </li>
+        <li class="flex items-center justify-between">
+          <span>Current Team Proficiency:</span>
+          <span id="checkride-curr-prof" class="text-white font-bold">32%</span>
+        </li>
+        <li class="flex items-center justify-between">
+          <span>Completed Sorties:</span>
+          <span id="checkride-curr-sorties" class="text-white font-bold">4</span>
+        </li>
+      </ul>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeCheckrideModal()" class="px-4 py-2 rounded bg-slate-800 text-slate-300 text-xs font-mono">CANCEL</button>
+        <button onclick="attemptCheckride()" id="btn-attempt-checkride" class="px-4 py-2 rounded bg-amber-600 hover:bg-amber-500 text-white font-hud font-bold text-xs">
+          FLY FORMAL CHECKRIDE
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT ENGINE -->
+  <script>
+    /* =========================================================================
+       AUDIO SYNTHESIZER (Web Audio API: Turbine rumble, radio squawks & beeps)
+       ========================================================================= */
+    class CockpitAudioSynthesizer {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
+        }
+      }
+      playRadioBeep(freq = 880, duration = 0.08) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {}
+      }
+      playWarningSquawk() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(480, this.ctx.currentTime);
+          osc.frequency.setValueAtTime(240, this.ctx.currentTime + 0.12);
+          gain.gain.setValueAtTime(0.07, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.0001, this.ctx.currentTime + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.3);
+        } catch (e) {}
+      }
+      playSuccessChime() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.frequency.setValueAtTime(f, this.ctx.currentTime + (i * 0.07));
+            gain.gain.setValueAtTime(0.04, this.ctx.currentTime + (i * 0.07));
+            gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + (i * 0.07) + 0.22);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(this.ctx.currentTime + (i * 0.07));
+            osc.stop(this.ctx.currentTime + (i * 0.07) + 0.22);
+          });
+        } catch (e) {}
+      }
+      playTurbineRumble() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(65, this.ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(140, this.ctx.currentTime + 0.4);
+          gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.5);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.5);
+        } catch (e) {}
+      }
+    }
+
+    const soundEngine = new CockpitAudioSynthesizer();
+    document.getElementById('btn-audio-toggle').addEventListener('click', () => {
+      soundEngine.init();
+      soundEngine.enabled = !soundEngine.enabled;
+      document.getElementById('audio-label').textContent = soundEngine.enabled ? 'SFX ON' : 'SFX OFF';
+      toast(soundEngine.enabled ? "Cockpit Audio: Enabled" : "Cockpit Audio: Muted", "info");
+      if (soundEngine.enabled) soundEngine.playRadioBeep(920, 0.1);
+    });
+
+    /* =========================================================================
+       EXTENSIVE AIRCRAFT FLEET DATABASE
+       ========================================================================= */
+    const JET_DATABASE = {
+      'f16c': {
+        id: 'f16c',
+        name: 'F-16C Fighting Falcon',
+        tribute: 'USAF Thunderbirds Signature Heritage',
+        glimit: '+9.0 / -3.0 G',
+        thrustToWeight: 1.10,
+        hourlyCost: 8200,
+        fuelBurnRate: 3400,
+        prestigeMult: 1.35,
+        engineCost: 240000,
+        description: 'Single-engine agile fighter with full fly-by-wire stick force, 360-degree bubble canopy, and razor-sharp diamond precision.'
+      },
+      'fa18e': {
+        id: 'fa18e',
+        name: 'F/A-18E/F Super Hornet',
+        tribute: 'US Navy Blue Angels Naval Aviation Heritage',
+        glimit: '+7.5 / -3.0 G',
+        thrustToWeight: 1.05,
+        hourlyCost: 10500,
+        fuelBurnRate: 4600,
+        prestigeMult: 1.45,
+        engineCost: 310000,
+        description: 'Heavy twin-engine naval fighter capable of extreme high-alpha nose pointing, dirty configuration passes, and carrier breaks.'
+      },
+      'f22a': {
+        id: 'f22a',
+        name: 'F-22A Raptor',
+        tribute: 'Air Combat Command Demo Wing',
+        glimit: '+9.5 / -3.5 G',
+        thrustToWeight: 1.25,
+        hourlyCost: 18500,
+        fuelBurnRate: 5200,
+        prestigeMult: 1.85,
+        engineCost: 480000,
+        description: '5th-Gen air superiority stealth marvel featuring 2D thrust-vectoring nozzles that perform physics-defying tail slides and flat spins.'
+      },
+      'f35a': {
+        id: 'f35a',
+        name: 'F-35A Lightning II',
+        tribute: 'USAF & Joint Strike Fighter Demo Team',
+        glimit: '+9.0 / -3.0 G',
+        thrustToWeight: 1.07,
+        hourlyCost: 12800,
+        fuelBurnRate: 4100,
+        prestigeMult: 1.50,
+        engineCost: 360000,
+        description: 'Stealth multirole platform driven by the Pratt & Whitney F135, the most powerful operational fighter engine in the world.'
+      },
+      'f4e': {
+        id: 'f4e',
+        name: 'F-4E Phantom II',
+        tribute: 'Historic Heavy Jet Warbird Tribute',
+        glimit: '+7.0 / -2.5 G',
+        thrustToWeight: 0.86,
+        hourlyCost: 16000,
+        fuelBurnRate: 6400,
+        prestigeMult: 1.40,
+        engineCost: 290000,
+        description: 'Twin-J79 turbojet beast. Generates immense deafening thunder and thick iconic dark smoke trails from two screaming exhausts.'
+      },
+      'a10c': {
+        id: 'a10c',
+        name: 'A-10C Thunderbolt II (Warthog)',
+        tribute: 'Close Air Support Heritage Demo',
+        glimit: '+6.5 / -2.0 G',
+        thrustToWeight: 0.65,
+        hourlyCost: 6900,
+        fuelBurnRate: 2300,
+        prestigeMult: 1.30,
+        engineCost: 195000,
+        description: 'Straight-wing titanium armored icon. Legendary TF34 high-bypass whine and exceptionally tight turning radius over the runway line.'
+      },
+      'mig29': {
+        id: 'mig29',
+        name: 'MiG-29 Fulcrum',
+        tribute: 'International Tactical Demo',
+        glimit: '+9.0 / -3.0 G',
+        thrustToWeight: 1.13,
+        hourlyCost: 14200,
+        fuelBurnRate: 4900,
+        prestigeMult: 1.55,
+        engineCost: 320000,
+        description: 'Twin Klimov RD-33 powered tactical fighter famed for high-alpha pitch authority and the historic Pugachev Cobra display.'
+      },
+      'mig15': {
+        id: 'mig15',
+        name: 'MiG-15 Fagot / Sabre Rival',
+        tribute: 'Vintage Jet Age Warbird Demo',
+        glimit: '+6.5 / -2.0 G',
+        thrustToWeight: 0.60,
+        hourlyCost: 5500,
+        fuelBurnRate: 1900,
+        prestigeMult: 1.20,
+        engineCost: 140000,
+        description: 'Early swept-wing jet legend. Pristine bare metal aluminum finish, centrifugal turbojet whine, and pure manual flight controls.'
+      }
+    };
+
+    /* =========================================================================
+       EXPANDED MANEUVER CATALOG (13 SIGNATURE MOVES)
+       ========================================================================= */
+    const MANEUVER_CATALOG = {
+      'diamond_takeoff': {
+        name: 'Diamond Takeoff & 60-Deg Bank Climb',
+        role: 'Diamond (1-4)',
+        minCeiling: 3500,
+        gForce: 4.5,
+        crowdScore: 78,
+        risk: 8,
+        stress: 5,
+        description: 'Jets 1-4 lift off in tight unison, gear retracts instantly, rolling into a 60-degree banked climb.'
+      },
+      'diamond_360': {
+        name: 'Diamond 360 Banked Turn',
+        role: 'Diamond (1-4)',
+        minCeiling: 1500,
+        gForce: 5.5,
+        crowdScore: 82,
+        risk: 10,
+        stress: 7,
+        description: 'Tight 360-degree level turn at 400 knots with wingtips held strictly within 18 inches.'
+      },
+      'sneak_pass': {
+        name: 'Mach 0.96 Sneak Pass',
+        role: 'Lead Solo (#5)',
+        minCeiling: 1500,
+        gForce: 6.5,
+        crowdScore: 98,
+        risk: 12,
+        stress: 10,
+        description: 'Low-level high-speed run from behind the crowd line bursting over center stage just below Mach 1.0.'
+      },
+      'calypso_pass': {
+        name: 'Calypso Pass (Canopy-to-Canopy)',
+        role: 'Solos (#5 & #6)',
+        minCeiling: 2500,
+        gForce: 3.5,
+        crowdScore: 94,
+        risk: 16,
+        stress: 8,
+        description: 'Opposing solo rolls inverted 15 to 25 feet directly above the upright lead solo along runway axis.'
+      },
+      'high_alpha': {
+        name: 'High Alpha / Slow Flight Pass',
+        role: 'Opposing Solo (#6)',
+        minCeiling: 1500,
+        gForce: 2.0,
+        crowdScore: 84,
+        risk: 9,
+        stress: 6,
+        description: 'Aircraft pitched up 35+ degrees angle of attack at only 115 knots in full burner.'
+      },
+      'bomb_burst': {
+        name: 'Bomb Burst with Vertical Cross',
+        role: 'Full 6-Ship',
+        minCeiling: 8000,
+        gForce: 7.5,
+        crowdScore: 100,
+        risk: 18,
+        stress: 15,
+        description: 'Vertical climb to 8,000 ft; 4 diamond jets peel in cardinal directions while solos rocket vertically through center!'
+      },
+      'min_radius_turn': {
+        name: 'Minimum Radius 9G Turn',
+        role: 'Lead Solo (#5)',
+        minCeiling: 2000,
+        gForce: 9.0,
+        crowdScore: 95,
+        risk: 20,
+        stress: 18,
+        description: 'Instantaneous 9G sustained turn on full afterburners inside the airport boundary line.'
+      },
+      'delta_roll': {
+        name: 'Delta 6-Ship Synchronous Roll',
+        role: 'Full 6-Ship',
+        minCeiling: 4500,
+        gForce: 5.8,
+        crowdScore: 92,
+        risk: 14,
+        stress: 9,
+        description: 'All 6 jets in a tight massive Delta arrow roll 360 degrees as a single unbroken rigid sheet.'
+      },
+      'fleur_de_lis': {
+        name: 'Fleur-de-Lis 4-Way Vertical Break',
+        role: 'Formation (1-5)',
+        minCeiling: 8000,
+        gForce: 6.8,
+        crowdScore: 96,
+        risk: 15,
+        stress: 12,
+        description: 'High vertical climb, looping over the top into three separate floral trajectories with white smoke.'
+      },
+      'crossover_pass': {
+        name: 'Opposing Solo Knife-Edge Crossover',
+        role: 'Solos (#5 & #6)',
+        minCeiling: 1500,
+        gForce: 7.0,
+        crowdScore: 96,
+        risk: 17,
+        stress: 11,
+        description: 'Solos approach each other head-on at 1,000 mph closure rate, crossing canopy-to-canopy at center point.'
+      },
+      'cobra_drift': {
+        name: 'Cobra Drift / Vectored Thrust Stall',
+        role: 'Solos (#5 & #6)',
+        minCeiling: 3000,
+        gForce: 4.5,
+        crowdScore: 93,
+        risk: 15,
+        stress: 12,
+        description: 'Pitching past 90 degrees angle of attack with rapid recovery and controlled directional slip.'
+      },
+      'carrier_break': {
+        name: 'Tuck-Under Pitch-Up Carrier Break',
+        role: 'Diamond (1-4)',
+        minCeiling: 2000,
+        gForce: 6.0,
+        crowdScore: 86,
+        risk: 11,
+        stress: 8,
+        description: 'Rapid 4-ship low pass followed by staggered high-G carrier style pitch-ups into landing pattern.'
+      },
+      'heritage_flight': {
+        name: 'Heritage / Legacy Warbird Escort',
+        role: 'Full Squadron + Warbird',
+        minCeiling: 1500,
+        gForce: 2.5,
+        crowdScore: 89,
+        risk: 5,
+        stress: 3,
+        description: 'Emotional, synchronized slow pass paying homage to generations of combat veterans.'
+      }
+    };
+
+    /* =========================================================================
+       AIR SHOW TOUR SCHEDULE (WEEKS 11-34)
+       ========================================================================= */
+    const TOUR_SCHEDULE_DATA = [
+      { week: 12, name: 'Sun \'n Fun Aerospace Expo', city: 'Lakeland, FL', baseCrowd: 180000, purse: 280000, tend: 'Sunny / Warm', ceiling: 9000 },
+      { week: 14, name: 'Fort Lauderdale Air Show', city: 'Fort Lauderdale, FL', baseCrowd: 220000, purse: 310000, tend: 'Ocean Haze', ceiling: 5000 },
+      { week: 16, name: 'Columbus Air Show (Rickenbacker)', city: 'Columbus, OH', baseCrowd: 175000, purse: 330000, tend: 'Variable Cumulus', ceiling: 8500 },
+      { week: 18, name: 'Dayton Air Show (Wright-Patt AFB)', city: 'Dayton, OH', baseCrowd: 210000, purse: 360000, tend: 'Midwestern Summer', ceiling: 7500 },
+      { week: 20, name: 'EAA AirVenture Oshkosh', city: 'Oshkosh, WI', baseCrowd: 650000, purse: 550000, tend: 'Clear / Gusty', ceiling: 10000 },
+      { week: 22, name: 'Chicago Air and Water Show', city: 'Chicago, IL', baseCrowd: 1200000, purse: 480000, tend: 'Lake Mist / Wind', ceiling: 4200 },
+      { week: 24, name: 'Abbotsford International Airshow', city: 'Abbotsford, BC', baseCrowd: 240000, purse: 320000, tend: 'Mountain Overcast', ceiling: 6500 },
+      { week: 27, name: 'Fleet Week San Francisco', city: 'San Francisco, CA', baseCrowd: 950000, purse: 520000, tend: 'Bay Fog / Clearing', ceiling: 3200 },
+      { week: 29, name: 'MCAS Miramar Air Show', city: 'San Diego, CA', baseCrowd: 500000, purse: 450000, tend: 'High Desert Sun', ceiling: 12000 },
+      { week: 31, name: 'Aviation Nation (Nellis AFB)', city: 'Las Vegas, NV', baseCrowd: 350000, purse: 420000, tend: 'Dry / Unlimited', ceiling: 15000 },
+      { week: 34, name: 'Pensacola Homecoming Air Show', city: 'Pensacola, FL', baseCrowd: 320000, purse: 490000, tend: 'Emerald Coast Sun', ceiling: 9000 }
+    ];
+
+    /* =========================================================================
+       DEFAULT GAME STATE
+       ========================================================================= */
+    const DEFAULT_GAME_STATE = {
+      teamName: 'Thunder Crest',
+      jetModel: 'f16c',
+      week: 1,
+      funds: 4850000,
+      fuelGallons: 145000,
+      prestige: 78,
+      certified: false,
+      sortiesFlown: 4,
+      proficiency: 32,
+      totalAttendance: 0,
+      hullInsuranceRate: 12000,
+      mishapHistoryCount: 0,
+      crashesCount: 0,
+      forcedWeather: null,
+      currentRoutine: ['diamond_takeoff', 'diamond_360', 'sneak_pass', 'calypso_pass', 'high_alpha', 'delta_roll', 'bomb_burst'],
+      pilots: [
+        { id: 1, role: 'Boss (#1 Flight Lead)', name: 'Cmdr. Vance "Jackal" Sterling', precision: 88, gTol: 9.0, awareness: 92, charisma: 90, fatigue: 15, morale: 92 },
+        { id: 2, role: 'Left Wing (#2)', name: 'Capt. Marcus "Bolt" Evans', precision: 84, gTol: 8.5, awareness: 86, charisma: 75, fatigue: 18, morale: 88 },
+        { id: 3, role: 'Right Wing (#3)', name: 'Maj. Elena "Nova" Rostova', precision: 86, gTol: 8.8, awareness: 89, charisma: 82, fatigue: 20, morale: 90 },
+        { id: 4, role: 'Slot Pilot (#4)', name: 'Capt. Devon "Anvil" Briggs', precision: 91, gTol: 9.2, awareness: 88, charisma: 70, fatigue: 25, morale: 84 },
+        { id: 5, role: 'Lead Solo (#5)', name: 'Maj. Travis "Ripcord" Hayes', precision: 92, gTol: 9.4, awareness: 94, charisma: 88, fatigue: 22, morale: 91 },
+        { id: 6, role: 'Opposing Solo (#6)', name: 'Capt. Jax "Static" Mercer', precision: 89, gTol: 9.3, awareness: 91, charisma: 86, fatigue: 24, morale: 89 },
+        { id: 7, role: 'Narrator / Safety (#7)', name: 'Maj. Sarah "Echo" Chen', precision: 80, gTol: 7.5, awareness: 95, charisma: 96, fatigue: 10, morale: 94 },
+        { id: 8, role: 'Maintenance Chief', name: 'Master Sgt. Bobby "Wrench" O\'Reilly', precision: 95, gTol: 6.0, awareness: 98, charisma: 65, fatigue: 30, morale: 88 }
+      ],
+      airframes: [
+        { tail: 'TC-01', role: 'Boss (#1)', status: 'FMC', hours: 412, engineLife: 92, fatigue: 14, smokeOk: true },
+        { tail: 'TC-02', role: 'Left Wing (#2)', status: 'FMC', hours: 388, engineLife: 90, fatigue: 16, smokeOk: true },
+        { tail: 'TC-03', role: 'Right Wing (#3)', status: 'FMC', hours: 405, engineLife: 88, fatigue: 18, smokeOk: true },
+        { tail: 'TC-04', role: 'Slot (#4)', status: 'FMC', hours: 440, engineLife: 82, fatigue: 22, smokeOk: true },
+        { tail: 'TC-05', role: 'Lead Solo (#5)', status: 'FMC', hours: 470, engineLife: 78, fatigue: 24, smokeOk: true },
+        { tail: 'TC-06', role: 'Opposing Solo (#6)', status: 'PMC', hours: 462, engineLife: 79, fatigue: 25, smokeOk: false },
+        { tail: 'TC-07', role: 'Narrator / VIP (#7)', status: 'FMC', hours: 290, engineLife: 95, fatigue: 8, smokeOk: true },
+        { tail: 'TC-08', role: 'Spare Aircraft (#8)', status: 'FMC', hours: 310, engineLife: 94, fatigue: 11, smokeOk: true }
+      ],
+      sponsors: [
+        { id: 'titan_aero', name: 'Titan Aerospace Dynamics', weeklyStipend: 45000, prestigeReq: 60, status: 'Active' },
+        { id: 'valiant_chrono', name: 'Valiant Aviation Chronographs', weeklyStipend: 35000, prestigeReq: 70, status: 'Active' },
+        { id: 'petro_jp8', name: 'National Jet-A Petroleum Logistics', weeklyStipend: 35000, prestigeReq: 65, status: 'Active' },
+        { id: 'apex_defense', name: 'Apex Defense Technologies', weeklyStipend: 80000, prestigeReq: 85, status: 'Available' },
+        { id: 'strato_avionics', name: 'Strato HUD Systems & Optics', weeklyStipend: 55000, prestigeReq: 80, status: 'Available' },
+        { id: 'strike_fuel_energy', name: 'Afterburner Energy Drink', weeklyStipend: 40000, prestigeReq: 75, status: 'Available' }
+      ],
+      completedShowLog: [],
+      logs: [
+        "Squadron winter operations initialized at NAF El Centro.",
+        "Aviation photographer fan management software deployed. Systems nominal.",
+        "Initial airframe engine borescope and wing spar scans passed with zero Class A write-ups."
+      ]
+    };
+
+    let gameState = loadGameState();
+
+    function saveGameState() {
+      try {
+        localStorage.setItem('smokon_leadsolo_state_v2', JSON.stringify(gameState));
+      } catch (e) {
+        console.warn("Storage quota exceeded", e);
+      }
+    }
+
+    function loadGameState() {
+      try {
+        const raw = localStorage.getItem('smokon_leadsolo_state_v2');
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      return JSON.parse(JSON.stringify(DEFAULT_GAME_STATE));
+    }
+
+    function resetGamePrompt() {
+      const ok = confirm("Confirm reset of all squadron season progress? This restores default workup conditions.");
+      if (ok) {
+        gameState = JSON.parse(JSON.stringify(DEFAULT_GAME_STATE));
+        saveGameState();
+        renderAll();
+        toast("Squadron initialized to new winter workup season.", "info");
+      }
+    }
+
+    /* =========================================================================
+       TOAST & LOGGING ENGINE
+       ========================================================================= */
+    function toast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      el.className = `p-3 rounded-lg text-xs font-mono border backdrop-blur shadow-2xl pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 flex items-center justify-between gap-2 ${
+        type === 'error' ? 'bg-red-950/90 border-red-500 text-red-200' :
+        type === 'success' ? 'bg-emerald-950/90 border-emerald-500 text-emerald-200' :
+        'bg-cockpit-900/90 border-cyan-500 text-cyan-200'
+      }`;
+      el.innerHTML = `<span>${message}</span><button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white">&times;</button>`;
+      container.appendChild(el);
+      requestAnimationFrame(() => {
+        el.classList.remove('translate-y-2', 'opacity-0');
+      });
+      setTimeout(() => {
+        el.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => el.remove(), 350);
+      }, 4500);
+    }
+
+    function addLog(text) {
+      const timestamp = `[W${gameState.week}]`;
+      gameState.logs.unshift(`${timestamp} ${text}`);
+      if (gameState.logs.length > 50) gameState.logs.pop();
+      renderLogs();
+    }
+
+    function renderLogs() {
+      const box = document.getElementById('squadron-log');
+      box.innerHTML = gameState.logs.map(l => {
+        let colorClass = 'text-slate-300';
+        if (l.includes('CRASH') || l.includes('FAIL') || l.includes('WARNING') || l.includes('KNOCK IT OFF') || l.includes('Mishap')) {
+          colorClass = 'text-red-400 font-bold';
+        } else if (l.includes('PASSED') || l.includes('SUCCESS') || l.includes('CERTIFIED') || l.includes('COMPLETED')) {
+          colorClass = 'text-emerald-300 font-bold';
+        } else if (l.includes('Sortie') || l.includes('Show') || l.includes('Prestige')) {
+          colorClass = 'text-cyan-300';
+        }
+        return `<div class="${colorClass}">${l}</div>`;
+      }).join('');
+    }
+
+    function clearLogs() {
+      gameState.logs = [`[W${gameState.week}] Teletype cleared by Flight Officer.`];
+      renderLogs();
+      saveGameState();
+    }
+
+    /* =========================================================================
+       NAVIGATION TABS
+       ========================================================================= */
+    function switchTab(tabId) {
+      soundEngine.playRadioBeep(1100, 0.05);
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-tab').forEach(b => {
+        b.classList.remove('bg-cockpit-800', 'border-cyan-500/40', 'text-cyan-300');
+        b.classList.add('text-slate-400', 'border-transparent');
+      });
+
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) target.classList.remove('hidden');
+
+      const activeBtn = document.querySelector(`.nav-tab[data-tab="${tabId}"]`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-cockpit-800', 'border-cyan-500/40', 'text-cyan-300');
+        activeBtn.classList.remove('text-slate-400', 'border-transparent');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* =========================================================================
+       DISCLAIMER & GOD MODE MODALS
+       ========================================================================= */
+    function openDisclaimerModal() {
+      soundEngine.playRadioBeep(900, 0.08);
+      document.getElementById('modal-disclaimer').classList.remove('hidden');
+    }
+    function closeDisclaimerModal() {
+      document.getElementById('modal-disclaimer').classList.add('hidden');
+    }
+
+    function toggleGodModeDrawer() {
+      soundEngine.playRadioBeep(1200, 0.08);
+      const m = document.getElementById('modal-godmode');
+      m.classList.toggle('hidden');
+    }
+
+    /* GOD MODE CHEATS */
+    function godAddFunds() {
+      soundEngine.playSuccessChime();
+      gameState.funds += 10000000;
+      addLog("⚡ GOD MODE: Injected $10,000,000 defense endowment.");
+      toast("God Mode: +$10,000,000 Funds", "success");
+      saveGameState();
+      renderAll();
+    }
+
+    function godMaxPilots() {
+      soundEngine.playSuccessChime();
+      gameState.pilots.forEach(p => {
+        p.precision = 99;
+        p.gTol = 10.0;
+        p.awareness = 99;
+        p.charisma = 99;
+        p.fatigue = 0;
+        p.morale = 100;
+      });
+      gameState.proficiency = 99;
+      addLog("⚡ GOD MODE: All pilots maximized (0% fatigue, 10G tolerance).");
+      toast("God Mode: Max Pilot Stats Applied", "success");
+      saveGameState();
+      renderAll();
+    }
+
+    function godInstantCert() {
+      soundEngine.playSuccessChime();
+      gameState.certified = true;
+      gameState.prestige = Math.min(100, gameState.prestige + 25);
+      addLog("⚡ GOD MODE: Instant FAA & DoD aerobatic box certification unlocked.");
+      toast("God Mode: Certified for National Tour", "success");
+      saveGameState();
+      renderAll();
+    }
+
+    function godRepairFleet() {
+      soundEngine.playSuccessChime();
+      gameState.airframes.forEach(a => {
+        a.status = 'FMC';
+        a.engineLife = 100;
+        a.fatigue = 0;
+        a.smokeOk = true;
+      });
+      addLog("⚡ GOD MODE: All 8 airframes restored to 100% FMC factory condition.");
+      toast("God Mode: Complete Fleet Depot Overhaul", "success");
+      saveGameState();
+      renderAll();
+    }
+
+    function godForceWeather(type) {
+      soundEngine.playRadioBeep(980, 0.08);
+      gameState.forcedWeather = type;
+      toast(`God Mode: Forced Weather set to ${type.toUpperCase()}`, "info");
+      addLog(`⚡ GOD MODE: Demonstration weather forced to: ${type.toUpperCase()}`);
+    }
+
+    function godSkipToTour() {
+      soundEngine.playRadioBeep(900, 0.1);
+      gameState.week = 16;
+      gameState.certified = true;
+      addLog("⚡ GOD MODE: Calendar warped to Week 16 (Columbus Air Show).");
+      toast("Warped to Tour Circuit (Wk 16)", "success");
+      saveGameState();
+      renderAll();
+    }
+
+    function godTriggerEmergency() {
+      toggleGodModeDrawer();
+      const currentShow = TOUR_SCHEDULE_DATA[2]; // Columbus
+      startAirShowSimulation(currentShow);
+      setTimeout(() => {
+        triggerSimEmergency();
+      }, 600);
+    }
+
+    function godTriggerCatastrophicCrash() {
+      toggleGodModeDrawer();
+      soundEngine.playWarningSquawk();
+      executeCatastrophicCrashScenario();
+    }
+
+    /* =========================================================================
+       CALCULATIONS & CORE SIMULATION LOGIC
+       ========================================================================= */
+    function getAveragePilotFatigue() {
+      const sum = gameState.pilots.slice(0, 6).reduce((acc, p) => acc + p.fatigue, 0);
+      return Math.round(sum / 6);
+    }
+
+    function getAverageGTolerance() {
+      const sum = gameState.pilots.slice(0, 6).reduce((acc, p) => acc + p.gTol, 0);
+      return (sum / 6).toFixed(1);
+    }
+
+    function getFleetReadinessScore() {
+      const fmcCount = gameState.airframes.filter(a => a.status === 'FMC').length;
+      const pmcCount = gameState.airframes.filter(a => a.status === 'PMC').length;
+      return Math.round(((fmcCount * 1.0 + pmcCount * 0.5) / gameState.airframes.length) * 100);
+    }
+
+    function getAverageEngineHealth() {
+      const sum = gameState.airframes.reduce((acc, a) => acc + a.engineLife, 0);
+      return Math.round(sum / gameState.airframes.length);
+    }
+
+    function calculateWeeklyBurn() {
+      const jet = JET_DATABASE[gameState.jetModel];
+      const crewSalaries = 32000;
+      const jetDepotReserve = jet.hourlyCost * 3.5;
+      const travelPerDiem = gameState.week > 10 ? 25000 : 8000;
+      return Math.round(crewSalaries + jetDepotReserve + travelPerDiem + gameState.hullInsuranceRate);
+    }
+
+    function calculateWeeklySponsorRevenue() {
+      return gameState.sponsors
+        .filter(s => s.status === 'Active')
+        .reduce((sum, s) => sum + s.weeklyStipend, 0);
+    }
+
+    function getRoutineAggressivenessRisk() {
+      let riskSum = 0;
+      let totalG = 0;
+      gameState.currentRoutine.forEach(key => {
+        const m = MANEUVER_CATALOG[key];
+        if (m) {
+          riskSum += m.risk;
+          totalG += m.gForce;
+        }
+      });
+      const avgFatigue = getAveragePilotFatigue();
+      const countFactor = gameState.currentRoutine.length * 1.2;
+      let calculatedRisk = (riskSum * 0.16) + (avgFatigue * 0.22) + (countFactor) - (gameState.proficiency * 0.25);
+      return Math.max(3.5, calculatedRisk).toFixed(1);
+    }
+
+    /* =========================================================================
+       TRAINING & WORKUP ACTIONS
+       ========================================================================= */
+    function flyTrainingSortie(type) {
+      soundEngine.init();
+      if (gameState.fuelGallons < 3400) {
+        soundEngine.playWarningSquawk();
+        toast("Insufficient JP-8 fuel! Refuel at depot.", "error");
+        return;
+      }
+
+      // Check NMC jets in diamond
+      const activeLineNmc = gameState.airframes.slice(0, 6).some(a => a.status === 'NMC');
+      if (activeLineNmc) {
+        soundEngine.playWarningSquawk();
+        toast("A flight line jet is NMC (Grounded)! Swap with spare #8 or overhaul.", "error");
+        return;
+      }
+
+      gameState.fuelGallons -= 3400;
+      gameState.sortiesFlown += 1;
+
+      const gain = type === 'formation' ? 3 : 2;
+      gameState.proficiency = Math.min(99, gameState.proficiency + gain);
+
+      // Wear on pilots
+      gameState.pilots.forEach(p => {
+        p.fatigue = Math.min(100, p.fatigue + 8);
+        if (Math.random() > 0.45) p.precision = Math.min(99, p.precision + 1);
+      });
+
+      // Wear on airframes
+      gameState.airframes.slice(0, 6).forEach(a => {
+        a.hours += 2;
+        a.fatigue = Math.min(100, a.fatigue + 2);
+        a.engineLife = Math.max(0, a.engineLife - 1);
+      });
+
+      soundEngine.playTurbineRumble();
+      addLog(`Sortie flown: ${type === 'formation' ? '6-Ship Diamond Box Drill' : 'Opposing Solo Knife-Edge Run'}. Proficiency increased to ${gameState.proficiency}%.`);
+      toast(`Sortie Complete! Proficiency: ${gameState.proficiency}%`, "success");
+      saveGameState();
+      renderAll();
+    }
+
+    function conductTeamBriefing() {
+      soundEngine.playRadioBeep(880, 0.08);
+      gameState.pilots.forEach(p => {
+        p.morale = Math.min(100, p.morale + 6);
+        p.awareness = Math.min(99, p.awareness + 1);
+      });
+      addLog("Boss Vance Sterling conducted detailed chalkboard review of canopy separation and entry airspeeds.");
+      toast("Team debrief completed. Morale & Awareness boosted!", "info");
+      saveGameState();
+      renderAll();
+    }
+
+    function grantCrewRest() {
+      soundEngine.playRadioBeep(600, 0.08);
+      gameState.pilots.forEach(p => {
+        p.fatigue = Math.max(0, p.fatigue - 25);
+        p.morale = Math.min(100, p.morale + 3);
+      });
+      addLog("Mandatory 24-hour crew stand-down granted. Pilot physiological fatigue restored.");
+      toast("Crew rest logged. Pilot fatigue decreased.", "info");
+      saveGameState();
+      renderAll();
+    }
+
+    function performFleetMaintenance() {
+      soundEngine.init();
+      if (gameState.funds < 45000) {
+        soundEngine.playWarningSquawk();
+        toast("Insufficient funds for squadron depot overhaul!", "error");
+        return;
+      }
+      gameState.funds -= 45000;
+      gameState.airframes.forEach(a => {
+        a.fatigue = Math.max(0, a.fatigue - 20);
+        a.smokeOk = true;
+        if (a.status === 'PMC') a.status = 'FMC';
+      });
+      soundEngine.playSuccessChime();
+      addLog("Depot maintenance team performed ultrasonic spar tests, hydraulic bleeds, and smoke injector flushes.");
+      toast("Depot Overhaul Complete! Structural fatigue cleared.", "success");
+      saveGameState();
+      renderAll();
+    }
+
+    function purchaseJP8Fuel() {
+      soundEngine.init();
+      if (gameState.funds < 85000) {
+        soundEngine.playWarningSquawk();
+        toast("Insufficient funds for bulk JP-8 fuel delivery!", "error");
+        return;
+      }
+      gameState.funds -= 85000;
+      gameState.fuelGallons += 25000;
+      soundEngine.playSuccessChime();
+      addLog("Purchased 25,000 gallons of high-grade military JP-8 / Jet-A fuel.");
+      toast("JP-8 Delivered (+25,000 gal)", "success");
+      saveGameState();
+      renderAll();
+    }
+
+    function hostAutographPR() {
+      soundEngine.playRadioBeep(980, 0.08);
+      gameState.prestige = Math.min(100, gameState.prestige + 3);
+      gameState.pilots.forEach(p => p.charisma = Math.min(99, p.charisma + 1));
+      addLog("Squadron hosted static display and autograph session for young fans and future aviators.");
+      toast("Public PR session successful! Prestige raised.", "info");
+      saveGameState();
+      renderAll();
+    }
+
+    /* =========================================================================
+       MAINTENANCE OVERHAUL ACTIONS (ENGINE REPLACEMENT & SWAPPING)
+       ========================================================================= */
+    function serviceAirframePreflight(tail) {
+      soundEngine.init();
+      const a = gameState.airframes.find(x => x.tail === tail);
+      if (!a) return;
+      if (gameState.funds < 5000) {
+        toast("Insufficient funds ($5,000) for pre-flight service.", "error");
+        return;
+      }
+      gameState.funds -= 5000;
+      a.smokeOk = true;
+      if (a.status === 'PMC') a.status = 'FMC';
+      soundEngine.playRadioBeep(980, 0.08);
+      toast(`Pre-flight inspection complete for ${tail}.`, "info");
+      addLog(`Airframe ${tail} passed pre-flight line check. Smoke systems green.`);
+      saveGameState();
+      renderAll();
+    }
+
+    function replaceAircraftEngine(tail) {
+      soundEngine.init();
+      const jet = JET_DATABASE[gameState.jetModel];
+      const cost = jet.engineCost;
+      if (gameState.funds < cost) {
+        soundEngine.playWarningSquawk();
+        toast(`Insufficient funds! Engine replacement requires $${cost.toLocaleString()}.`, "error");
+        return;
+      }
+      const ok = confirm(`Confirm complete engine teardown and replacement on ${tail}? Cost: $${cost.toLocaleString()}`);
+      if (!ok) return;
+
+      gameState.funds -= cost;
+      const a = gameState.airframes.find(x => x.tail === tail);
+      if (a) {
+        a.engineLife = 100;
+        a.status = 'FMC';
+        soundEngine.playSuccessChime();
+        addLog(`DEPOT OVERHAUL: Full turbofan engine replacement executed on airframe ${tail}.`);
+        toast(`Engine replaced on ${tail}! Engine Core at 100%.`, "success");
+        saveGameState();
+        renderAll();
+      }
+    }
+
+    function swapSpareToSlot(tail) {
+      soundEngine.init();
+      const spare = gameState.airframes.find(x => x.tail === 'TC-08');
+      const target = gameState.airframes.find(x => x.tail === tail);
+      if (!spare || !target || spare === target) return;
+
+      // Swap positions
+      const tempRole = target.role;
+      target.role = spare.role;
+      spare.role = tempRole;
+
+      // Swap array positions for visual table clarity
+      const idxT = gameState.airframes.indexOf(target);
+      const idxS = gameState.airframes.indexOf(spare);
+      gameState.airframes[idxT] = spare;
+      gameState.airframes[idxS] = target;
+
+      soundEngine.playRadioBeep(850, 0.08);
+      addLog(`HANGAR LOGISTICS: Swapped spare airframe into ${tempRole}. Aircraft ${target.tail} moved to reserve.`);
+      toast(`Swapped ${spare.tail} into ${tempRole}`, "info");
+      saveGameState();
+      renderAll();
+    }
+
+    /* =========================================================================
+       WEEK ADVANCEMENT ENGINE
+       ========================================================================= */
+    function advanceWeek() {
+      soundEngine.init();
+      soundEngine.playRadioBeep(880, 0.1);
+
+      // Financials
+      const rev = calculateWeeklySponsorRevenue();
+      const exp = calculateWeeklyBurn();
+      gameState.funds += (rev - exp);
+
+      // Crew fatigue decrease slightly
+      gameState.pilots.forEach(p => {
+        p.fatigue = Math.max(0, p.fatigue - 4);
+      });
+
+      // Air show tour check
+      const currentShow = TOUR_SCHEDULE_DATA.find(s => s.week === gameState.week);
+      if (currentShow && !gameState.completedShowLog.some(x => x.name === currentShow.name)) {
+        if (!gameState.certified) {
+          soundEngine.playWarningSquawk();
+          toast(`Cannot fly ${currentShow.name}! FAA certification required.`, "error");
+          addLog(`CANCELLED APPEARANCE: ${currentShow.name} missed due to uncertified status.`);
+        } else {
+          startAirShowSimulation(currentShow);
+          return;
+        }
+      }
+
+      gameState.week += 1;
+      if (gameState.week > 36) {
+        gameState.week = 1;
+        gameState.completedShowLog = [];
+        addLog("ANNUAL SEASON CONCLUDED. Welcome to the new training year!");
+        toast("Season Complete! New annual tour cycle initialized.", "success");
+      } else {
+        addLog(`Week ${gameState.week} begun. Fleet logistics and treasury reconciled.`);
+      }
+
+      saveGameState();
+      renderAll();
+    }
+
+    /* =========================================================================
+       FAA / DOD CERTIFICATION CHECKRIDE
+       ========================================================================= */
+    function openCheckrideModal() {
+      soundEngine.playRadioBeep(700, 0.08);
+      document.getElementById('checkride-curr-prof').textContent = `${gameState.proficiency}%`;
+      document.getElementById('checkride-curr-sorties').textContent = `${gameState.sortiesFlown}`;
+      document.getElementById('modal-checkride').classList.remove('hidden');
+    }
+
+    function closeCheckrideModal() {
+      document.getElementById('modal-checkride').classList.add('hidden');
+    }
+
+    function attemptCheckride() {
+      closeCheckrideModal();
+      soundEngine.init();
+
+      if (gameState.proficiency < 60 || gameState.sortiesFlown < 18) {
+        soundEngine.playWarningSquawk();
+        addLog("CERTIFICATION CHECKRIDE FAILED: Formation proficiency below 60% or winter sorties under 18.");
+        toast("Checkride Unsatisfactory! Continue winter practice sorties.", "error");
+        return;
+      }
+
+      soundEngine.playSuccessChime();
+      gameState.certified = true;
+      gameState.prestige = Math.min(100, gameState.prestige + 15);
+      addLog("COMMANDER & FAA EVALUATION: PASSED! Squadron officially certified for nationwide air show display.");
+      toast("CERTIFICATION GRANTED! Authorized for National Tour.", "success");
+      saveGameState();
+      renderAll();
+    }
+
+    /* =========================================================================
+       LIVE AIR SHOW SIMULATION & RISK ENGINE
+       ========================================================================= */
+    let activeSimulation = null;
+
+    function startAirShowSimulation(showData) {
+      soundEngine.init();
+      soundEngine.playRadioBeep(1200, 0.15);
+
+      // Determine Weather (or respect God Mode forced weather)
+      let ceilingCondition = 'High Show (Clear 12,000+ ft)';
+      if (gameState.forcedWeather === 'low') ceilingCondition = 'Low Show (Overcast 4,500 ft)';
+      else if (gameState.forcedWeather === 'flat') ceilingCondition = 'Flat Show (Deck 2,100 ft)';
+      else if (!gameState.forcedWeather) {
+        const roll = Math.random();
+        if (roll < 0.20) ceilingCondition = 'Flat Show (Deck 2,200 ft)';
+        else if (roll < 0.45) ceilingCondition = 'Low Show (Overcast 4,500 ft)';
+      }
+
+      activeSimulation = {
+        show: showData,
+        ceilingType: ceilingCondition,
+        step: 0,
+        maneuvers: [...gameState.currentRoutine],
+        telemetry: {
+          speed: 420,
+          g: 5.5,
+          tightness: 18,
+          crowd: 75
+        },
+        hasEmergency: false
+      };
+
+      document.getElementById('sim-title').textContent = `${showData.name.toUpperCase()}`;
+      document.getElementById('sim-subtitle').textContent = `${showData.city} • Expected Base Crowd: ${showData.baseCrowd.toLocaleString()}`;
+      document.getElementById('sim-weather').textContent = ceilingCondition;
+      document.getElementById('sim-console').innerHTML = '';
+      document.getElementById('sim-emergency-box').classList.add('hidden');
+      document.getElementById('sim-modal').classList.remove('hidden');
+
+      appendSimLog("AIR BOSS", `Vapor Trail Flight, cleared for aerobatic box. Wind 210 at 10 kts. Altimeter 29.94.`);
+      appendSimLog("BOSS (#1)", `Smoke ON... GO! Delta roll onto runway show centerline.`);
+      updateSimUI();
+    }
+
+    function appendSimLog(callsign, text, color = 'text-slate-200') {
+      const c = document.getElementById('sim-console');
+      const div = document.createElement('div');
+      div.className = `leading-tight ${color}`;
+      div.innerHTML = `<span class="text-cyan-400 font-bold">[${callsign}]</span> ${text}`;
+      c.appendChild(div);
+      c.scrollTop = c.scrollHeight;
+    }
+
+    function updateSimUI() {
+      const s = activeSimulation;
+      const progress = Math.round((s.step / s.maneuvers.length) * 100);
+      document.getElementById('sim-progress-bar').style.width = `${progress}%`;
+      document.getElementById('sim-telemetry-speed').textContent = `${s.telemetry.speed} KTS`;
+      document.getElementById('sim-telemetry-g').textContent = `${s.telemetry.g} G`;
+      document.getElementById('sim-telemetry-tightness').textContent = `${s.telemetry.tightness} INCHES`;
+      document.getElementById('sim-telemetry-crowd').textContent = `${Math.min(100, s.telemetry.crowd)}%`;
+    }
+
+    function nextSimStep() {
+      soundEngine.init();
+      const s = activeSimulation;
+      if (!s) return;
+
+      if (s.step >= s.maneuvers.length) {
+        finishAirShow();
+        return;
+      }
+
+      const manKey = s.maneuvers[s.step];
+      const man = MANEUVER_CATALOG[manKey] || { name: manKey, gForce: 5.0, crowdScore: 80, minCeiling: 1500, risk: 10 };
+
+      // Weather checks
+      if (s.ceilingType.includes('Flat') && man.minCeiling > 3500) {
+        soundEngine.playRadioBeep(620, 0.1);
+        appendSimLog("BOSS (#1)", `Low ceiling audible! Modified ${man.name} to Flat Show Low Knife-Edge Pass.`, "text-amberhud font-semibold");
+        s.telemetry.g = 4.2;
+        s.telemetry.crowd += 7;
+      } else {
+        soundEngine.playRadioBeep(940, 0.08);
+        appendSimLog("BOSS (#1)", `Cadence call: "Ready, hit it... PULL!" Executing ${man.name}.`, "text-cyan-300");
+        s.telemetry.g = man.gForce;
+        s.telemetry.crowd += Math.round(man.crowdScore * 0.12);
+      }
+
+      // Check In-Flight Failure/Emergency Probability
+      const riskRating = parseFloat(getRoutineAggressivenessRisk());
+      if (!s.hasEmergency && Math.random() < (riskRating * 0.015)) {
+        triggerSimEmergency();
+        return;
+      }
+
+      s.step += 1;
+      s.telemetry.speed = 380 + Math.floor(Math.random() * 140);
+      s.telemetry.tightness = Math.max(12, 20 - Math.floor(gameState.proficiency * 0.09));
+
+      updateSimUI();
+
+      if (s.step >= s.maneuvers.length) {
+        document.getElementById('sim-action-btn').innerHTML = `<span>CONCLUDE AIR SHOW & LAND</span>`;
+      }
+    }
+
+    function triggerSimEmergency() {
+      const s = activeSimulation;
+      s.hasEmergency = true;
+      soundEngine.playWarningSquawk();
+
+      const events = [
+        {
+          title: "PHYSIOLOGICAL: LEAD SOLO G-LOC TUNNEL VISION",
+          desc: "Lead Solo (#5) reports gray-out and tunnel vision after sustaining 9.0 Gs on minimum radius turn.",
+          choices: [
+            { text: "Command #5 to Ease G to 4.0 Max", riskDelta: -10, crowdDelta: -4 },
+            { text: "Call 'Knock It Off' & Rejoin Orbit", riskDelta: -20, crowdDelta: -12 }
+          ]
+        },
+        {
+          title: "MECHANICAL: HYDRAULIC PRESSURE LOSS ON #4 SLOT",
+          desc: "Slot Jet #4 master caution chime sounds: Flight control hydraulic pressure dropping to 1,800 PSI in jet wash.",
+          choices: [
+            { text: "Abort Slot Jet #4 to Auxiliary Runway", riskDelta: -18, crowdDelta: -5 },
+            { text: "Switch to Backup Hyds & Tighten Diamond", riskDelta: 15, crowdDelta: 10 }
+          ]
+        },
+        {
+          title: "AIRSPACE: CROSSWIND DRIFT NEAR FAA 500-FT BOX",
+          desc: "Sudden 25-knot microburst pushes the 6-ship delta dangerously close to the spectator buffer line.",
+          choices: [
+            { text: "Aggressive Breakaway Bank Away From Crowd", riskDelta: -15, crowdDelta: -2 },
+            { text: "Hold Line on Full Afterburners", riskDelta: 20, crowdDelta: 15 }
+          ]
+        },
+        {
+          title: "ENVIRONMENTAL: BIRD STRIKE THROUGH ENGINE INTAKE",
+          desc: "Right Wing (#3) strikes a flock of Canadian geese off runway threshold. Severe compressor stall!",
+          choices: [
+            { text: "Chop Throttle, Declare In-Flight Emergency (IFE)", riskDelta: -25, crowdDelta: -8 },
+            { text: "Relight Engine & Complete Finale", riskDelta: 25, crowdDelta: 12 }
+          ]
+        }
+      ];
+
+      const chosen = events[Math.floor(Math.random() * events.length)];
+      document.getElementById('emergency-title').textContent = chosen.title;
+      document.getElementById('emergency-desc').textContent = chosen.desc;
+
+      const choiceBox = document.getElementById('emergency-choices');
+      choiceBox.innerHTML = chosen.choices.map((c, i) => `
+        <button onclick="resolveEmergency(${c.riskDelta}, ${c.crowdDelta})" class="px-3 py-1.5 rounded bg-red-900/90 hover:bg-red-800 border border-red-400 text-white font-mono text-xs font-semibold">
+          ${c.text}
+        </button>
+      `).join('');
+
+      document.getElementById('sim-emergency-box').classList.remove('hidden');
+      document.getElementById('sim-action-btn').disabled = true;
+    }
+
+    function resolveEmergency(riskDelta, crowdDelta) {
+      const s = activeSimulation;
+      s.telemetry.crowd = Math.max(10, s.telemetry.crowd + crowdDelta);
+      document.getElementById('sim-emergency-box').classList.add('hidden');
+      document.getElementById('sim-action-btn').disabled = false;
+      soundEngine.playRadioBeep(980, 0.1);
+      appendSimLog("BOSS (#1)", "Emergency procedures implemented calmly. Formation integrity held.", "text-emerald-400 font-bold");
+      s.step += 1;
+      updateSimUI();
+    }
+
+    function executeCatastrophicCrashScenario() {
+      gameState.crashesCount += 1;
+      gameState.mishapHistoryCount += 1;
+      gameState.prestige = Math.max(10, gameState.prestige - 30);
+      gameState.hullInsuranceRate += 25000; // insurance spikes!
+
+      // Mark a jet as destroyed/NMC
+      const crashedAirframe = gameState.airframes[3]; // Slot #4
+      crashedAirframe.status = 'NMC';
+      crashedAirframe.engineLife = 0;
+      crashedAirframe.fatigue = 100;
+
+      // Pilot injuries
+      gameState.pilots[3].morale = 40;
+      gameState.pilots[3].fatigue = 90;
+
+      addLog("CATASTROPHIC INCIDENT: Mid-air collision in show box! Pilot successfully ejected. Show halted by FAA. Safety Investigation Board convened.");
+      toast("CATASTROPHIC INCIDENT OCCURRED! Airframe lost.", "error");
+
+      if (activeSimulation) {
+        document.getElementById('sim-modal').classList.add('hidden');
+        activeSimulation = null;
+      }
+
+      saveGameState();
+      renderAll();
+    }
+
+    function finishAirShow() {
+      const s = activeSimulation;
+      soundEngine.playSuccessChime();
+
+      // Attendance Model
+      const prestigeFactor = gameState.prestige / 75;
+      const routineExcitementFactor = s.telemetry.crowd / 80;
+      const actualAttendance = Math.round(s.show.baseCrowd * prestigeFactor * routineExcitementFactor);
+      gameState.totalAttendance += actualAttendance;
+
+      // Finances (Purse + Gate Cut + Merch)
+      const gateCut = Math.round(actualAttendance * 1.50);
+      const merchConcessions = Math.round(actualAttendance * 0.85);
+      const totalEarned = s.show.purse + gateCut + merchConcessions;
+
+      // Fuel & Engine expenses
+      const jet = JET_DATABASE[gameState.jetModel];
+      const fuelCost = jet.fuelBurnRate * 1.8;
+      const netProfit = totalEarned - fuelCost;
+
+      gameState.funds += netProfit;
+      gameState.fuelGallons -= jet.fuelBurnRate;
+      gameState.prestige = Math.min(100, gameState.prestige + 7);
+
+      // Log show result
+      gameState.completedShowLog.push({
+        name: s.show.name,
+        city: s.show.city,
+        week: s.show.week,
+        attendance: actualAttendance,
+        totalRevenue: totalEarned,
+        netProfit: netProfit
+      });
+
+      // Pilot Fatigue
+      gameState.pilots.forEach(p => {
+        p.fatigue = Math.min(100, p.fatigue + 15);
+        p.morale = Math.min(100, p.morale + 6);
+      });
+
+      // Airframe wear
+      gameState.airframes.slice(0, 6).forEach(a => {
+        a.hours += 3;
+        a.fatigue = Math.min(100, a.fatigue + 4);
+        a.engineLife = Math.max(0, a.engineLife - 2);
+      });
+
+      addLog(`AIR SHOW VICTORY: Headlined ${s.show.name}! Recorded Attendance: ${actualAttendance.toLocaleString()} spectators. Net Profit: +$${netProfit.toLocaleString()}.`);
+      toast(`Show Spectacular! Attendance: ${actualAttendance.toLocaleString()}`, "success");
+
+      document.getElementById('sim-modal').classList.add('hidden');
+      activeSimulation = null;
+      gameState.week += 1;
+      saveGameState();
+      renderAll();
+    }
+
+    /* =========================================================================
+       ROUTINE CHOREOGRAPHER FUNCTIONS
+       ========================================================================= */
+    function renderChoreographer() {
+      const container = document.getElementById('choreographed-list');
+      const libContainer = document.getElementById('maneuver-library');
+
+      container.innerHTML = gameState.currentRoutine.map((manKey, idx) => {
+        const m = MANEUVER_CATALOG[manKey];
+        if (!m) return '';
+        return `
+          <div class="flex items-center justify-between p-3 rounded-lg bg-cockpit-900 border border-slate-800 text-xs font-mono">
+            <div class="flex items-center gap-3">
+              <span class="w-6 h-6 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 flex items-center justify-center font-bold font-hud">${idx + 1}</span>
+              <div>
+                <span class="text-white font-bold">${m.name}</span>
+                <span class="text-slate-500 text-[10px] block">${m.role} • Min: ${m.minCeiling}ft • Peak: ${m.gForce}G • Risk: ${m.risk}%</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="moveManeuver(${idx}, -1)" class="p-1 rounded bg-cockpit-800 hover:text-cyan-400 text-slate-400" ${idx === 0 ? 'disabled' : ''}>▲</button>
+              <button onclick="moveManeuver(${idx}, 1)" class="p-1 rounded bg-cockpit-800 hover:text-cyan-400 text-slate-400" ${idx === gameState.currentRoutine.length - 1 ? 'disabled' : ''}>▼</button>
+              <button onclick="removeManeuver(${idx})" class="p-1 rounded bg-red-950/60 hover:bg-red-900 text-red-400 font-bold">&times;</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      libContainer.innerHTML = Object.keys(MANEUVER_CATALOG).map(key => {
+        const item = MANEUVER_CATALOG[key];
+        return `
+          <button onclick="addManeuver('${key}')" class="p-2 text-left rounded-lg bg-cockpit-950 hover:bg-cockpit-800 border border-slate-800 hover:border-cyan-500/50 text-xs font-mono transition">
+            <div class="text-cyan-300 font-bold truncate">${item.name}</div>
+            <div class="text-[10px] text-slate-400">${item.role} • ${item.gForce}G • +${item.crowdScore} pts</div>
+          </button>
+        `;
+      }).join('');
+
+      document.getElementById('routine-maneuver-count').textContent = gameState.currentRoutine.length;
+      document.getElementById('routine-duration').textContent = `${gameState.currentRoutine.length * 4.5 + 8} Mins`;
+
+      let totalScore = 0;
+      let highestCeiling = 1500;
+      gameState.currentRoutine.forEach(key => {
+        const item = MANEUVER_CATALOG[key];
+        if (item) {
+          totalScore += item.crowdScore;
+          if (item.minCeiling > highestCeiling) highestCeiling = item.minCeiling;
+        }
+      });
+
+      const avgScore = gameState.currentRoutine.length ? Math.min(100, Math.round(totalScore / gameState.currentRoutine.length)) : 0;
+      const riskVal = getRoutineAggressivenessRisk();
+
+      document.getElementById('routine-crowd-score').textContent = `${avgScore} / 100`;
+      document.getElementById('routine-risk-score').textContent = `${riskVal}%`;
+      document.getElementById('routine-min-ceiling').textContent = `${highestCeiling.toLocaleString()} FT`;
+    }
+
+    function addManeuver(key) {
+      if (gameState.currentRoutine.length >= 12) {
+        toast("Maximum routine size reached (12 maneuvers max) for FAA box clearance window.", "error");
+        return;
+      }
+      soundEngine.playRadioBeep(920, 0.08);
+      gameState.currentRoutine.push(key);
+      saveGameState();
+      renderChoreographer();
+    }
+
+    function removeManeuver(idx) {
+      if (gameState.currentRoutine.length <= 4) {
+        toast("A flight demo requires at least 4 maneuvers.", "error");
+        return;
+      }
+      soundEngine.playRadioBeep(650, 0.08);
+      gameState.currentRoutine.splice(idx, 1);
+      saveGameState();
+      renderChoreographer();
+    }
+
+    function moveManeuver(idx, delta) {
+      soundEngine.playRadioBeep(850, 0.05);
+      const target = idx + delta;
+      if (target < 0 || target >= gameState.currentRoutine.length) return;
+      const temp = gameState.currentRoutine[idx];
+      gameState.currentRoutine[idx] = gameState.currentRoutine[target];
+      gameState.currentRoutine[target] = temp;
+      saveGameState();
+      renderChoreographer();
+    }
+
+    function presetThunderbirdsRoutine() {
+      gameState.currentRoutine = ['diamond_takeoff', 'diamond_360', 'sneak_pass', 'delta_roll', 'bomb_burst'];
+      toast("Viper Delta Routine Loaded", "info");
+      saveGameState();
+      renderChoreographer();
+    }
+
+    function presetBlueAngelsRoutine() {
+      gameState.currentRoutine = ['diamond_takeoff', 'calypso_pass', 'high_alpha', 'crossover_pass', 'fleur_de_lis'];
+      toast("Calypso Fleur Routine Loaded", "info");
+      saveGameState();
+      renderChoreographer();
+    }
+
+    function presetMaxAggroRoutine() {
+      gameState.currentRoutine = ['diamond_takeoff', 'min_radius_turn', 'calypso_pass', 'sneak_pass', 'crossover_pass', 'cobra_drift', 'bomb_burst'];
+      toast("MAXIMUM ENVELOPE (9G) Routine Loaded - High Risk!", "error");
+      saveGameState();
+      renderChoreographer();
+    }
+
+    /* =========================================================================
+       ROSTER & FLEET RENDERING
+       ========================================================================= */
+    function renderRoster() {
+      const grid = document.getElementById('roster-grid');
+      grid.innerHTML = gameState.pilots.map(p => `
+        <div class="hud-border glass-panel rounded-xl p-4 space-y-3 relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cockpit-950 text-cyan-400 border border-slate-800 font-bold uppercase">${p.role}</span>
+            <span class="font-mono text-xs ${p.fatigue > 50 ? 'text-warningred font-bold' : 'text-slate-400'}">Fatigue: ${p.fatigue}%</span>
+          </div>
+          <div>
+            <h4 class="font-hud font-bold text-base text-white">${p.name}</h4>
+            <div class="text-[11px] font-mono text-slate-400 flex items-center gap-2 mt-0.5">
+              <span>Morale: <b class="text-goldfoil">${p.morale}%</b></span>
+              <span>•</span>
+              <span>G-Tol: <b class="text-amberhud">${p.gTol}G</b></span>
+            </div>
+          </div>
+          <div class="space-y-1.5 font-mono text-[11px]">
+            <div>
+              <div class="flex justify-between text-slate-400"><span>Formation Precision:</span><span class="text-cyan-300 font-bold">${p.precision}%</span></div>
+              <div class="w-full h-1.5 bg-cockpit-950 rounded-full overflow-hidden"><div class="h-full bg-cyan-400" style="width: ${p.precision}%"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-slate-400"><span>Situational Awareness:</span><span class="text-emerald-300 font-bold">${p.awareness}%</span></div>
+              <div class="w-full h-1.5 bg-cockpit-950 rounded-full overflow-hidden"><div class="h-full bg-emerald-400" style="width: ${p.awareness}%"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-slate-400"><span>Public PR Charisma:</span><span class="text-goldfoil font-bold">${p.charisma}%</span></div>
+              <div class="w-full h-1.5 bg-cockpit-950 rounded-full overflow-hidden"><div class="h-full bg-goldfoil" style="width: ${p.charisma}%"></div></div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderFleet() {
+      const jet = JET_DATABASE[gameState.jetModel];
+      document.getElementById('hangar-jet-name').textContent = jet.name;
+      document.getElementById('hangar-jet-desc').textContent = jet.description;
+      document.getElementById('hangar-stat-g').textContent = jet.glimit;
+      document.getElementById('hangar-stat-tw').textContent = `${jet.thrustToWeight} : 1`;
+      document.getElementById('hangar-stat-cost').textContent = `$${jet.hourlyCost.toLocaleString()}/hr`;
+      document.getElementById('hangar-stat-prestige').textContent = `x${jet.prestigeMult}`;
+
+      const tbody = document.getElementById('airframes-table-body');
+      tbody.innerHTML = gameState.airframes.map(a => {
+        let statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">FMC</span>`;
+        if (a.status === 'PMC') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amberhud border border-amber-800">PMC</span>`;
+        if (a.status === 'NMC') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-950 text-red-400 border border-red-800">NMC (GROUNDED)</span>`;
+
+        return `
+          <tr class="hover:bg-cockpit-900/60 transition">
+            <td class="p-3">
+              <span class="font-bold text-cyan-300 block">${a.tail}</span>
+              <span class="text-slate-400 text-[10px]">${a.role}</span>
+            </td>
+            <td class="p-3">${statusBadge}</td>
+            <td class="p-3 text-slate-300">${a.hours} hrs</td>
+            <td class="p-3">
+              <span class="${a.engineLife < 50 ? 'text-red-400 font-bold' : 'text-emerald-400'}">${a.engineLife}% Core</span>
+            </td>
+            <td class="p-3">
+              <span class="${a.fatigue > 40 ? 'text-warningred font-bold' : 'text-slate-300'}">${a.fatigue}% Fatigue</span>
+            </td>
+            <td class="p-3">
+              ${a.smokeOk ? '<span class="text-emerald-400">PRESSURIZED</span>' : '<span class="text-amberhud">CLOGGED/LEAK</span>'}
+            </td>
+            <td class="p-3 text-right">
+              <div class="flex items-center justify-end gap-1.5 flex-wrap">
+                <button onclick="serviceAirframePreflight('${a.tail}')" class="px-2 py-1 rounded bg-cockpit-800 hover:bg-slate-700 text-[10px] text-cyan-300 border border-slate-700">SERVICE ($5k)</button>
+                <button onclick="replaceAircraftEngine('${a.tail}')" class="px-2 py-1 rounded bg-cockpit-800 hover:bg-amber-900/40 text-[10px] text-amberhud border border-amberhud/40">NEW ENGINE</button>
+                ${a.tail !== 'TC-08' ? `<button onclick="swapSpareToSlot('${a.tail}')" class="px-2 py-1 rounded bg-cockpit-800 hover:bg-blue-900/40 text-[10px] text-blue-300 border border-blue-500/30">SWAP #8 SPARE</button>` : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    /* =========================================================================
+       JET MODEL SWAP MODAL
+       ========================================================================= */
+    function openChangeJetModal() {
+      soundEngine.playRadioBeep(850, 0.08);
+      const list = document.getElementById('jet-selection-list');
+      list.innerHTML = Object.values(JET_DATABASE).map(j => `
+        <div class="p-4 rounded-xl border ${gameState.jetModel === j.id ? 'border-cyan-400 bg-cyan-950/40' : 'border-slate-800 bg-cockpit-900/80'} space-y-2">
+          <div class="flex justify-between items-center">
+            <h4 class="font-hud font-bold text-sm text-white">${j.name}</h4>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cockpit-950 text-goldfoil border border-slate-700">${j.tribute}</span>
+          </div>
+          <p class="text-slate-400 text-xs font-mono line-clamp-2">${j.description}</p>
+          <div class="text-[11px] font-mono text-slate-300 flex justify-between pt-1 border-t border-slate-800">
+            <span>G-Limit: <b class="text-amberhud">${j.glimit}</b></span>
+            <span>T/W: <b class="text-cyan-300">${j.thrustToWeight}</b></span>
+            <span>Hourly: <b class="text-emerald-400">$${j.hourlyCost}</b></span>
+          </div>
+          <button onclick="selectJetModel('${j.id}')" class="w-full mt-2 py-1.5 rounded bg-cockpit-800 hover:bg-cyan-900/50 border border-cyan-500/30 text-cyan-300 text-xs font-mono font-bold">
+            ${gameState.jetModel === j.id ? 'CURRENT SQUADRON WORKHORSE' : 'CONVERT FLEET TO THIS MODEL'}
+          </button>
+        </div>
+      `).join('');
+      document.getElementById('modal-jet-swap').classList.remove('hidden');
+    }
+
+    function closeJetModal() {
+      document.getElementById('modal-jet-swap').classList.add('hidden');
+    }
+
+    function selectJetModel(jetId) {
+      soundEngine.playSuccessChime();
+      gameState.jetModel = jetId;
+      addLog(`Fleet aircraft converted to ${JET_DATABASE[jetId].name}. Maintenance crew cross-certified.`);
+      toast(`Converted team aircraft to ${JET_DATABASE[jetId].name}`, "success");
+      closeJetModal();
+      saveGameState();
+      renderAll();
+    }
+
+    /* =========================================================================
+       TOUR & ATTENDANCE RENDERING
+       ========================================================================= */
+    function renderTour() {
+      const tbody = document.getElementById('tour-table-body');
+      tbody.innerHTML = TOUR_SCHEDULE_DATA.map(t => {
+        const loggedShow = gameState.completedShowLog.find(x => x.name === t.name);
+        const isCurrent = gameState.week === t.week;
+        return `
+          <tr class="${isCurrent ? 'bg-cyan-950/40 border-l-4 border-l-cyan-400' : 'hover:bg-cockpit-900/60'} transition">
+            <td class="p-3 font-bold ${isCurrent ? 'text-amberhud' : 'text-slate-300'}">WK ${t.week}</td>
+            <td class="p-3">
+              <span class="font-bold text-white block">${t.name}</span>
+              <span class="text-[10px] text-slate-400">${t.city} • ${t.tend}</span>
+            </td>
+            <td class="p-3 font-mono">
+              ${loggedShow ? `<span class="text-white font-bold">${loggedShow.attendance.toLocaleString()}</span> <span class="text-emerald-400 text-[10px]">Attended</span>` : `<span class="text-slate-400">Est. ${t.baseCrowd.toLocaleString()}</span>`}
+            </td>
+            <td class="p-3 font-mono font-bold text-emerald-400">
+              ${loggedShow ? `$${loggedShow.totalRevenue.toLocaleString()}` : `$${t.purse.toLocaleString()} base`}
+            </td>
+            <td class="p-3 font-mono font-bold">
+              ${loggedShow ? `<span class="text-cyan-300">+$${loggedShow.netProfit.toLocaleString()}</span>` : '<span class="text-slate-600">Pending</span>'}
+            </td>
+            <td class="p-3 font-bold">
+              ${loggedShow ? '<span class="text-emerald-400">PERFORMED</span>' :
+                isCurrent ? '<span class="text-amberhud animate-pulse">SHOW WEEK</span>' :
+                '<span class="text-slate-500">SCHEDULED</span>'}
+            </td>
+            <td class="p-3 text-right">
+              ${isCurrent && !loggedShow ? `
+                <button onclick="startAirShowSimulation(TOUR_SCHEDULE_DATA.find(x => x.week === ${t.week}))" class="px-3 py-1 rounded bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-hud font-bold text-[10px] tracking-wide shadow-lg border border-cyan-300/40">
+                  EXECUTE DEMO
+                </button>
+              ` : loggedShow ? `
+                <span class="text-slate-500 text-[10px]">RECORDED</span>
+              ` : `
+                <span class="text-slate-600 text-[10px]">STANDBY</span>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      const currShow = TOUR_SCHEDULE_DATA.find(s => s.week === gameState.week);
+      document.getElementById('tour-current-location').textContent = currShow ? `${currShow.name} (${currShow.city})` : 'NAF El Centro (Training Complex)';
+    }
+
+    function renderFinances() {
+      document.getElementById('fin-treasury').textContent = `$${gameState.funds.toLocaleString()}`;
+      document.getElementById('fin-weekly-rev').textContent = `+$${calculateWeeklySponsorRevenue().toLocaleString()}`;
+      document.getElementById('fin-weekly-exp').textContent = `-$${calculateWeeklyBurn().toLocaleString()}`;
+      document.getElementById('fin-insurance-rate').textContent = `$${gameState.hullInsuranceRate.toLocaleString()}/wk`;
+
+      // Active Sponsors
+      const activeList = document.getElementById('active-sponsors-list');
+      const active = gameState.sponsors.filter(s => s.status === 'Active');
+      activeList.innerHTML = active.map(s => `
+        <div class="p-3 rounded-lg bg-cockpit-950 border border-slate-800 flex justify-between items-center text-xs font-mono">
+          <div>
+            <div class="font-bold text-white">${s.name}</div>
+            <div class="text-[10px] text-slate-400">Weekly Stipend: <b class="text-emerald-400">+$${s.weeklyStipend.toLocaleString()}</b></div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 text-[10px] font-bold border border-emerald-800">ACTIVE</span>
+        </div>
+      `).join('');
+
+      // Available Sponsors
+      const availList = document.getElementById('available-sponsors-list');
+      const available = gameState.sponsors.filter(s => s.status === 'Available');
+      availList.innerHTML = available.map(s => {
+        const canSign = gameState.prestige >= s.prestigeReq;
+        return `
+          <div class="p-3 rounded-lg bg-cockpit-950 border border-slate-800 flex justify-between items-center text-xs font-mono">
+            <div>
+              <div class="font-bold text-white">${s.name}</div>
+              <div class="text-[10px] text-slate-400">Stipend: <b class="text-emerald-400">+$${s.weeklyStipend.toLocaleString()}</b> • Req Prestige: <b class="text-goldfoil">${s.prestigeReq}</b></div>
+            </div>
+            <button onclick="signSponsor('${s.id}')" class="px-3 py-1.5 rounded text-[10px] font-bold ${canSign ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}" ${!canSign ? 'disabled' : ''}>
+              ${canSign ? 'SIGN CONTRACT' : 'PRESTIGE LOW'}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function signSponsor(id) {
+      soundEngine.playSuccessChime();
+      const s = gameState.sponsors.find(x => x.id === id);
+      if (s) {
+        s.status = 'Active';
+        addLog(`New corporate sponsorship contract signed with ${s.name}!`);
+        toast(`Contract Finalized: ${s.name}`, "success");
+        saveGameState();
+        renderAll();
+      }
+    }
+
+    /* =========================================================================
+       GLOBAL UI MASTER RENDER
+       ========================================================================= */
+    function renderAll() {
+      document.getElementById('top-team-name').textContent = gameState.teamName;
+      document.getElementById('top-jet-model').textContent = JET_DATABASE[gameState.jetModel].name.toUpperCase();
+      document.getElementById('top-week').textContent = gameState.week;
+      document.getElementById('top-phase').textContent = gameState.week <= 10 ? 'WINTER WORKUPS' : 'NATIONAL AIR SHOW TOUR';
+      document.getElementById('top-funds').textContent = `$${gameState.funds.toLocaleString()}`;
+      document.getElementById('top-fuel').textContent = `${gameState.fuelGallons.toLocaleString()} gal`;
+      document.getElementById('top-prestige').textContent = gameState.prestige;
+      document.getElementById('top-cert').textContent = gameState.certified ? 'CERTIFIED' : 'PENDING';
+      document.getElementById('top-cert').className = gameState.certified ? 'font-bold text-emerald-400' : 'font-bold text-warningred';
+
+      document.getElementById('campaign-progress-txt').textContent = `Week ${gameState.week} of 36 (${gameState.week <= 10 ? 'Winter Workups' : 'National Circuit'})`;
+      document.getElementById('campaign-progress-bar').style.width = `${Math.min(100, Math.round((gameState.week / 36) * 100))}%`;
+
+      document.getElementById('hq-proficiency-val').textContent = `${gameState.proficiency}%`;
+      document.getElementById('hq-proficiency-bar').style.width = `${gameState.proficiency}%`;
+      document.getElementById('hq-mishap-risk').textContent = `${getRoutineAggressivenessRisk()}%`;
+      document.getElementById('hq-sorties-count').textContent = `${gameState.sortiesFlown} / 65 Target`;
+      document.getElementById('hq-avg-gtol').textContent = `${getAverageGTolerance()} Gs`;
+
+      const fleetScore = getFleetReadinessScore();
+      document.getElementById('hq-fleet-readiness').textContent = `${fleetScore}%`;
+      document.getElementById('hq-fleet-bar').style.width = `${fleetScore}%`;
+
+      const fmcCount = gameState.airframes.filter(a => a.status === 'FMC').length;
+      const pmcCount = gameState.airframes.filter(a => a.status === 'PMC').length;
+      const nmcCount = gameState.airframes.filter(a => a.status === 'NMC').length;
+      document.getElementById('hq-fleet-breakdown').textContent = `${fmcCount} FMC / ${pmcCount} PMC / ${nmcCount} NMC`;
+      document.getElementById('hq-engine-health').textContent = `${getAverageEngineHealth()}% Core Life`;
+
+      document.getElementById('hq-total-attendance').textContent = `${gameState.totalAttendance.toLocaleString()} Fans`;
+      document.getElementById('hq-burn-rate').textContent = `$${calculateWeeklyBurn().toLocaleString()} / wk`;
+      document.getElementById('hq-insurance-status').textContent = gameState.crashesCount > 0 ? `${gameState.crashesCount} INCIDENTS LOGGED (HIGH RATE)` : `CLEAN RECORD ($${gameState.hullInsuranceRate}/wk)`;
+
+      if (gameState.week > 10 && !gameState.certified) {
+        document.getElementById('badge-winter-status').className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-red-950 text-red-400 border border-red-800';
+        document.getElementById('badge-winter-status').textContent = 'TOUR ACTIVE • CERTIFICATION OVERDUE';
+      } else if (gameState.certified) {
+        document.getElementById('badge-winter-status').className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800';
+        document.getElementById('badge-winter-status').textContent = 'FAA / DOD FLIGHT LINE CERTIFIED';
+      }
+
+      renderLogs();
+      renderRoster();
+      renderFleet();
+      renderChoreographer();
+      renderTour();
+      renderFinances();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderAll();
+      toast("SMOKE ON! Lead Solo Simulator Loaded. Systems Nominal.", "info");
+    });
+  </script>
+</body>
+</html>
