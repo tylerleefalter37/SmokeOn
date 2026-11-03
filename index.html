@@ -500,18 +500,24 @@
     <section id="tab-routine" class="tab-content hidden space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 class="text-xl font-hud font-bold text-white tracking-wide">ROUTINE CHOREOGRAPHER & DACT DOGFIGHT SUITE</h2>
-          <p class="text-camo-titanium text-xs font-mono">Combine Precision Formations, Extreme Solos, and Dogfight / Red Flag DACT maneuvers. Pairing dissimilar aircraft unlocks substantial crowd excitement bonuses!</p>
+          <h2 class="text-xl font-hud font-bold text-white tracking-wide">ROUTINE CHOREOGRAPHER & FLIGHT FORMATIONS</h2>
+          <p class="text-camo-titanium text-xs font-mono">Build customized air show programs from Single-Ship, 2-Ship Solos, 4-Ship Diamond, 6-Ship Delta, and DACT Dogfight maneuvers. Target: 10–12 maneuvers for a full 50–60 minute slot.</p>
         </div>
-        <div class="flex flex-wrap gap-2">
-          <button onclick="presetViperDelta()" class="px-3 py-1.5 rounded bg-camo-charcoal hover:bg-camo-slate border border-hudgreen/40 text-hudgreen text-xs font-mono">
-            PRESET: VIPER DELTA
+        <div class="flex flex-wrap gap-1.5 font-mono text-xs">
+          <button onclick="presetSingleShip()" class="px-2.5 py-1 rounded bg-camo-charcoal hover:bg-camo-slate border border-camo-titanium/40 text-camo-ghost hover:text-white">
+            1-SHIP SOLO DEMO
           </button>
-          <button onclick="presetDactKoreanWar()" class="px-3 py-1.5 rounded bg-camo-charcoal hover:bg-camo-slate border border-amberhud/40 text-amberhud text-xs font-mono">
-            PRESET: KOREAN WAR DOGFIGHT (F-86 vs MiG-15)
+          <button onclick="presetTwoShipSolos()" class="px-2.5 py-1 rounded bg-camo-charcoal hover:bg-camo-slate border border-cyanview/40 text-cyanview hover:text-white">
+            2-SHIP OPPOSING SOLOS
           </button>
-          <button onclick="presetDactRedFlagAggressor()" class="px-3 py-1.5 rounded bg-camo-charcoal hover:bg-camo-slate border border-cyanview/40 text-cyanview text-xs font-mono">
-            PRESET: RED FLAG DACT (MiG-29 vs US FIGHTERS)
+          <button onclick="presetFourShipDiamond()" class="px-2.5 py-1 rounded bg-camo-charcoal hover:bg-camo-slate border border-hudgreen/40 text-hudgreen hover:text-white">
+            4-SHIP DIAMOND DEMO
+          </button>
+          <button onclick="presetDeltaClassic()" class="px-2.5 py-1 rounded bg-camo-charcoal hover:bg-camo-slate border border-radar/40 text-radar hover:text-white">
+            6-SHIP DELTA CLASSIC
+          </button>
+          <button onclick="presetMegaHeadline()" class="px-2.5 py-1 rounded bg-amberhud/20 hover:bg-amberhud/30 border border-amberhud/60 text-amberhud font-bold shadow-sm">
+            ★ 12-MANEUVER MEGA HEADLINE (~1 HR)
           </button>
         </div>
       </div>
@@ -520,8 +526,8 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-camo-black/80 p-4 rounded-xl border border-camo-titanium/20">
           <span class="text-xs font-mono text-camo-titanium">ESTIMATED SHOW DURATION</span>
-          <div id="routine-duration" class="text-2xl font-hud font-bold text-white mt-1">36 Mins</div>
-          <span class="text-[10px] text-camo-titanium">FAA Standard Slot Window</span>
+          <div id="routine-duration" class="text-2xl font-hud font-bold text-white mt-1">58 Mins</div>
+          <span class="text-[10px] text-camo-titanium">Target: 50–60 Min Air Show Window</span>
         </div>
         <div class="bg-camo-black/80 p-4 rounded-xl border border-camo-titanium/20">
           <span class="text-xs font-mono text-camo-titanium">CROWD EXCITEMENT INDEX</span>
@@ -544,7 +550,7 @@
       <div class="hud-card rounded-xl p-4 sm:p-6 space-y-4">
         <div class="flex items-center justify-between">
           <h3 class="font-hud font-bold text-base text-hudgreen">ACTIVE FLIGHT CARD (SEQUENCE)</h3>
-          <span class="text-xs font-mono text-camo-titanium">Total Maneuvers: <span id="routine-maneuver-count" class="text-white font-bold">8</span> (Max 12)</span>
+          <span class="text-xs font-mono text-camo-titanium">Total Maneuvers: <span id="routine-maneuver-count" class="text-white font-bold">12</span> (Max 14)</span>
         </div>
 
         <div id="choreographed-list" class="space-y-2">
@@ -553,13 +559,15 @@
 
         <!-- Maneuver Category Tabs -->
         <div class="pt-4 border-t border-camo-titanium/20">
-          <div class="flex items-center justify-between mb-3">
-            <h4 class="text-xs font-mono font-bold text-camo-ghost">SELECT MANEUVER FROM PLAYBOOK:</h4>
-            <div class="flex gap-1">
-              <button onclick="filterManeuvers('all')" class="px-2 py-0.5 rounded bg-camo-slate text-xs font-mono text-white">ALL</button>
-              <button onclick="filterManeuvers('dogfight')" class="px-2 py-0.5 rounded bg-amberhud/20 text-amberhud border border-amberhud/30 text-xs font-mono font-bold">⚔️ DOGFIGHT / DACT</button>
-              <button onclick="filterManeuvers('formation')" class="px-2 py-0.5 rounded bg-camo-slate text-xs font-mono text-hudgreen">FORMATION</button>
-              <button onclick="filterManeuvers('solos')" class="px-2 py-0.5 rounded bg-camo-slate text-xs font-mono text-cyanview">SOLOS</button>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <h4 class="text-xs font-mono font-bold text-camo-ghost">FILTER MANEUVER PLAYBOOK BY FORMATION:</h4>
+            <div class="flex flex-wrap gap-1">
+              <button onclick="filterManeuvers('all')" class="maneuver-filter-btn px-2 py-0.5 rounded bg-camo-slate text-xs font-mono text-hudgreen font-bold" data-mcat="all">ALL</button>
+              <button onclick="filterManeuvers('single')" class="maneuver-filter-btn px-2 py-0.5 rounded text-xs font-mono text-camo-titanium hover:text-white" data-mcat="single">SINGLE-SHIP (SOLO)</button>
+              <button onclick="filterManeuvers('twoship')" class="maneuver-filter-btn px-2 py-0.5 rounded text-xs font-mono text-camo-titanium hover:text-white" data-mcat="twoship">2-SHIP (PAIRS)</button>
+              <button onclick="filterManeuvers('fourship')" class="maneuver-filter-btn px-2 py-0.5 rounded text-xs font-mono text-camo-titanium hover:text-white" data-mcat="fourship">4-SHIP (DIAMOND)</button>
+              <button onclick="filterManeuvers('delta')" class="maneuver-filter-btn px-2 py-0.5 rounded text-xs font-mono text-camo-titanium hover:text-white" data-mcat="delta">6-SHIP (DELTA)</button>
+              <button onclick="filterManeuvers('dogfight')" class="maneuver-filter-btn px-2 py-0.5 rounded text-xs font-mono text-amberhud border border-amberhud/40 bg-amberhud/10" data-mcat="dogfight">⚔️ DACT DOGFIGHT</button>
             </div>
           </div>
           <div id="maneuver-library" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-80 overflow-y-auto pr-1">
@@ -1343,6 +1351,289 @@
        MANEUVER CATALOG WITH DEDICATED DOGFIGHT / RED FLAG DACT SUITE
        ========================================================================= */
     const MANEUVER_CATALOG = {
+      // --- SINGLE-SHIP TACTICAL SOLOS ---
+      'solo_unrestricted_climb': {
+        name: 'Unrestricted Maximum Vertical Climb',
+        category: 'single',
+        role: 'Single-Ship Solo (#5)',
+        minCeiling: 8000,
+        gForce: 8.5,
+        crowdScore: 92,
+        risk: 10,
+        stress: 10,
+        description: 'Takeoff run holding 50 ft above runway to 450 kts, pulling purely vertical to 15,000 ft in full afterburner.'
+      },
+      'min_radius_turn': {
+        name: 'Minimum Radius 9G Turn',
+        category: 'single',
+        role: 'Single-Ship Solo (#5)',
+        minCeiling: 2000,
+        gForce: 9.0,
+        crowdScore: 95,
+        risk: 20,
+        stress: 18,
+        description: 'Instantaneous 9G sustained turn on full afterburners tightly carved inside the airport fence boundary.'
+      },
+      'high_alpha': {
+        name: 'High Alpha / Slow Flight Dirty Pass',
+        category: 'single',
+        role: 'Single-Ship Solo (#6)',
+        minCeiling: 1500,
+        gForce: 2.0,
+        crowdScore: 86,
+        risk: 9,
+        stress: 6,
+        description: 'Aircraft pitched up 35+ degrees angle of attack at only 110 knots with gear down in howling full burner.'
+      },
+      'tail_slide': {
+        name: 'Pugachev Vertical Tail Slide',
+        category: 'single',
+        role: 'Single-Ship Solo (#5)',
+        minCeiling: 7500,
+        gForce: 5.2,
+        crowdScore: 96,
+        risk: 18,
+        stress: 16,
+        description: 'Jet climbs purely vertical until forward airspeed zeroes out, sliding backwards on exhaust before recovering forward.'
+      },
+      'solo_square_loop': {
+        name: 'Dedicated 4-Corner Square Loop',
+        category: 'single',
+        role: 'Single-Ship Solo (#5)',
+        minCeiling: 7000,
+        gForce: 8.0,
+        crowdScore: 90,
+        risk: 14,
+        stress: 13,
+        description: 'Vertical loop executed with crisp 90-degree corner pulls showing razor-sharp flight-control authority.'
+      },
+      'sneak_pass': {
+        name: 'Mach 0.96 High-Speed Sneak Pass',
+        category: 'single',
+        role: 'Single-Ship Solo (#5)',
+        minCeiling: 1500,
+        gForce: 6.5,
+        crowdScore: 98,
+        risk: 12,
+        stress: 10,
+        description: 'Low-level 500+ knot run sneaking in from behind the crowd line bursting over show center with vapor cone.'
+      },
+      'solo_post_stall_cobra': {
+        name: 'Post-Stall Cobra Pitchback Drift',
+        category: 'single',
+        role: 'Single-Ship Solo (#6)',
+        minCeiling: 3000,
+        gForce: 8.8,
+        crowdScore: 99,
+        risk: 21,
+        stress: 17,
+        description: 'Violent pitch-up past 100 degrees angle of attack while maintaining level horizontal flight momentum.'
+      },
+      'heritage_flight': {
+        name: 'Solo Heritage / Veteran Tribute Flyby',
+        category: 'single',
+        role: 'Single-Ship Solo (#5)',
+        minCeiling: 1500,
+        gForce: 2.5,
+        crowdScore: 88,
+        risk: 5,
+        stress: 3,
+        description: 'Emotional low-and-slow pass with white smoke streaming paying tribute to aviation pioneers and combat veterans.'
+      },
+
+      // --- 2-SHIP OPPOSING SOLOS / PAIRS ---
+      'calypso_pass': {
+        name: 'Calypso Pass (Canopy-to-Canopy)',
+        category: 'twoship',
+        role: '2-Ship Solos (#5 & #6)',
+        minCeiling: 2500,
+        gForce: 3.5,
+        crowdScore: 95,
+        risk: 16,
+        stress: 8,
+        description: 'Opposing solo rolls completely inverted 15 to 25 feet directly above the upright lead solo along show axis.'
+      },
+      'opposing_knife_edge': {
+        name: 'Opposing Knife-Edge Crossover',
+        category: 'twoship',
+        role: '2-Ship Solos (#5 & #6)',
+        minCeiling: 1500,
+        gForce: 7.2,
+        crowdScore: 97,
+        risk: 17,
+        stress: 14,
+        description: 'Both solos bank 90 degrees knife-edge flashing directly past each other at a combined closing speed of 850 kts.'
+      },
+      'opposing_360': {
+        name: 'Opposing 360-Degree Horizontal Reversal',
+        category: 'twoship',
+        role: '2-Ship Solos (#5 & #6)',
+        minCeiling: 2000,
+        gForce: 7.8,
+        crowdScore: 93,
+        risk: 15,
+        stress: 12,
+        description: 'Two jets merge at show center, peel away in symmetrical 360-degree high-G circles, and cross on the rollout.'
+      },
+      'section_high_speed_roll': {
+        name: '2-Ship Section Synchronous Roll',
+        category: 'twoship',
+        role: '2-Ship Solos (#5 & #6)',
+        minCeiling: 3000,
+        gForce: 6.0,
+        crowdScore: 91,
+        risk: 13,
+        stress: 9,
+        description: 'Two aircraft welded side-by-side in close trail perform simultaneous high-rate aileron rolls with smoke.'
+      },
+      'tuck_over_roll': {
+        name: 'Tuck-Over Roll & Dirty Rejoin',
+        category: 'twoship',
+        role: '2-Ship Solos (#5 & #6)',
+        minCeiling: 2500,
+        gForce: 6.8,
+        crowdScore: 92,
+        risk: 14,
+        stress: 11,
+        description: 'Opposing solo dives under and tucks over lead solo while rolling, realigning smoothly on the runway heading.'
+      },
+
+      // --- 4-SHIP DIAMOND FORMATION ---
+      'diamond_takeoff': {
+        name: 'Diamond Takeoff & 60-Deg Bank Climb',
+        category: 'fourship',
+        role: 'Diamond (1-4)',
+        minCeiling: 3500,
+        gForce: 4.5,
+        crowdScore: 82,
+        risk: 8,
+        stress: 6,
+        description: 'Jets 1-4 lift off in tight box unison, gear snaps up instantly, rolling together into a 60-degree banked climb.'
+      },
+      'diamond_360': {
+        name: 'Diamond 360 Banked Turn (18-Inch Buffer)',
+        category: 'fourship',
+        role: 'Diamond (1-4)',
+        minCeiling: 1500,
+        gForce: 5.5,
+        crowdScore: 86,
+        risk: 10,
+        stress: 8,
+        description: 'Tight 360-degree level turn at 400 knots with wingtips held strictly within 18 inches of canopy rails.'
+      },
+      'diamond_roll': {
+        name: 'Diamond 4-Ship Synchronous Barrel Roll',
+        category: 'fourship',
+        role: 'Diamond (1-4)',
+        minCeiling: 4500,
+        gForce: 5.8,
+        crowdScore: 93,
+        risk: 14,
+        stress: 10,
+        description: '4-ship diamond executes a majestic rolling barrel roll without opening an inch of separation.'
+      },
+      'diamond_dirty_loop': {
+        name: 'Diamond Dirty Loop (Gear & Flaps Extended)',
+        category: 'fourship',
+        role: 'Diamond (1-4)',
+        minCeiling: 7500,
+        gForce: 6.0,
+        crowdScore: 94,
+        risk: 16,
+        stress: 12,
+        description: 'Diamond loops over the vertical with landing gear down and arresting hooks down, balancing high drag against power.'
+      },
+      'trail_to_diamond_loop': {
+        name: 'Trail-to-Diamond Roll Transition',
+        category: 'fourship',
+        role: 'Diamond (1-4)',
+        minCeiling: 6000,
+        gForce: 6.2,
+        crowdScore: 91,
+        risk: 12,
+        stress: 9,
+        description: 'Enters in single-file trail and transforms mid-loop into a razor-sharp 4-ship diamond over the top.'
+      },
+      'carrier_break': {
+        name: 'Tuck-Under Pitch-Up Carrier Break',
+        category: 'fourship',
+        role: 'Diamond (1-4)',
+        minCeiling: 2000,
+        gForce: 6.5,
+        crowdScore: 89,
+        risk: 11,
+        stress: 8,
+        description: 'High-speed 4-ship pass followed by staggered carrier-style 6G pitch-up breaks into the landing pattern.'
+      },
+
+      // --- 6-SHIP DELTA / FULL FORMATION ---
+      'delta_roll': {
+        name: 'Delta 6-Ship Synchronous Roll',
+        category: 'delta',
+        role: 'Full 6-Ship Delta',
+        minCeiling: 4500,
+        gForce: 5.8,
+        crowdScore: 94,
+        risk: 14,
+        stress: 10,
+        description: 'All 6 jets locked in a massive Delta arrowhead roll 360 degrees as a single unbroken rigid sheet.'
+      },
+      'delta_loop': {
+        name: 'Delta 6-Ship Grand Vertical Loop',
+        category: 'delta',
+        role: 'Full 6-Ship Delta',
+        minCeiling: 8000,
+        gForce: 6.2,
+        crowdScore: 97,
+        risk: 16,
+        stress: 13,
+        description: 'Enormous 6-ship formation vertical loop climbing through 8,000 ft before pulling smoothly over the top.'
+      },
+      'delta_360_pass': {
+        name: 'Delta Transonic Flat Sweep Pass',
+        category: 'delta',
+        role: 'Full 6-Ship Delta',
+        minCeiling: 1500,
+        gForce: 5.0,
+        crowdScore: 91,
+        risk: 9,
+        stress: 7,
+        description: 'All 6 jets in delta formation fly low along the crowd runway line at 480 kts in deafening echelon roar.'
+      },
+      'bomb_burst': {
+        name: 'Bomb Burst with Vertical Cross',
+        category: 'delta',
+        role: 'Full 6-Ship Delta',
+        minCeiling: 8000,
+        gForce: 7.5,
+        crowdScore: 100,
+        risk: 18,
+        stress: 15,
+        description: 'Vertical climb to 8,000 ft; 4 diamond jets peel toward cardinal directions while solos shoot through center!'
+      },
+      'fleur_de_lis': {
+        name: 'Fleur-de-Lis 5-Way Vertical Fan Break',
+        category: 'delta',
+        role: 'Full 6-Ship Delta',
+        minCeiling: 8000,
+        gForce: 6.8,
+        crowdScore: 96,
+        risk: 15,
+        stress: 12,
+        description: 'High vertical climb, looping over the top into three separate floral trajectories leaving dense smoke trails.'
+      },
+      'delta_breakout_landing': {
+        name: 'Delta 6-Ship Staggered Runway Break',
+        category: 'delta',
+        role: 'Full 6-Ship Delta',
+        minCeiling: 1800,
+        gForce: 6.0,
+        crowdScore: 92,
+        risk: 11,
+        stress: 8,
+        description: 'Final pass down the runway where all 6 jets break in 3-second rapid intervals for immediate recovery.'
+      },
+
       // --- DACT / DOGFIGHT MANEUVERS ---
       'dact_merge': {
         name: 'High-Speed Tactical Merge (1,000 kt Split)',
@@ -1356,7 +1647,7 @@
         description: 'Opposing fighters charge head-on at 500 kts each, flashing canopy-to-canopy with instant vertical extension.'
       },
       'dact_rolling_scissors': {
-        name: 'Rolling Scissors (Dissimilar Turn-Rate Dogfight)',
+        name: 'Rolling Scissors (Turn-Rate ACM Duel)',
         category: 'dogfight',
         role: 'Solos (#5 & #6)',
         minCeiling: 3000,
@@ -1364,7 +1655,7 @@
         crowdScore: 96,
         risk: 17,
         stress: 14,
-        description: 'Intertwined barrel rolls where pilots use energy bleed, lift vectors, and nose authority to get behind each other.'
+        description: 'Intertwined barrel rolls where dissimilar aircraft use lift vectors and nose authority to gain position.'
       },
       'dact_flat_scissors': {
         name: 'Flat Scissors (Slow-Speed Overshoot Force)',
@@ -1375,7 +1666,7 @@
         crowdScore: 94,
         risk: 16,
         stress: 12,
-        description: 'Low-speed horizontal weave right on the ragged edge of stall buffet forcing a trailing overshoot.'
+        description: 'Low-speed horizontal weave right on the ragged edge of stall buffet forcing a trailing bandit overshoot.'
       },
       'dact_high_yoyo': {
         name: 'High Yo-Yo Energy Conservation Squeeze',
@@ -1386,7 +1677,7 @@
         crowdScore: 92,
         risk: 13,
         stress: 11,
-        description: 'Attacking fighter trades excessive speed for altitude in a climbing roll, then plunges onto the defender’s 6 o\'clock.'
+        description: 'Attacking fighter trades excessive speed for altitude in a climbing roll, plunging back onto the tail.'
       },
       'dact_low_yoyo': {
         name: 'Low Yo-Yo Pure Pursuit Dive',
@@ -1419,7 +1710,7 @@
         crowdScore: 94,
         risk: 14,
         stress: 11,
-        description: 'Two friendly fighters execute lateral pincer split, trapping the opposing "bandit" jet in a deadly missile funnel.'
+        description: 'Two fighters execute lateral pincer split, trapping the opposing "bandit" jet in a deadly missile funnel.'
       },
       'dact_barrel_roll_defense': {
         name: 'High-G Barrel Roll Gun Defense',
@@ -1441,7 +1732,7 @@
         crowdScore: 97,
         risk: 19,
         stress: 16,
-        description: 'High-alpha pitchup and yaw reversal rotating the nose 180 degrees back onto target while forward airspeed drops to 90 kts.'
+        description: 'High-alpha pitchup and yaw reversal rotating the nose 180 degrees back onto target at low forward airspeed.'
       },
       'dact_vertical_spiral': {
         name: 'Vertical Defensive Spiral to Hard Deck',
@@ -1464,153 +1755,6 @@
         risk: 16,
         stress: 13,
         description: 'Both aircraft fly knife-edge at 90 degrees bank past the crowd, noses tracking each other with smoke on.'
-      },
-
-      // --- FORMATION MANEUVERS ---
-      'diamond_takeoff': {
-        name: 'Diamond Takeoff & 60-Deg Bank Climb',
-        category: 'formation',
-        role: 'Diamond (1-4)',
-        minCeiling: 3500,
-        gForce: 4.5,
-        crowdScore: 78,
-        risk: 7,
-        stress: 5,
-        description: 'Jets 1-4 lift off in tight unison, gear retracts instantly, rolling into a 60-degree banked climb.'
-      },
-      'diamond_360': {
-        name: 'Diamond 360 Banked Turn',
-        category: 'formation',
-        role: 'Diamond (1-4)',
-        minCeiling: 1500,
-        gForce: 5.5,
-        crowdScore: 82,
-        risk: 9,
-        stress: 7,
-        description: 'Tight 360-degree level turn at 400 knots with wingtips held strictly within 18 inches.'
-      },
-      'delta_roll': {
-        name: 'Delta 6-Ship Synchronous Roll',
-        category: 'formation',
-        role: 'Full 6-Ship',
-        minCeiling: 4500,
-        gForce: 5.8,
-        crowdScore: 92,
-        risk: 14,
-        stress: 9,
-        description: 'All 6 jets in a tight massive Delta arrow roll 360 degrees as a single unbroken rigid sheet.'
-      },
-      'delta_loop': {
-        name: 'Delta 6-Ship Vertical Loop',
-        category: 'formation',
-        role: 'Full 6-Ship',
-        minCeiling: 8000,
-        gForce: 6.2,
-        crowdScore: 97,
-        risk: 16,
-        stress: 13,
-        description: 'Enormous 6-ship formation loop climbing through 8,000 ft before pulling over the top.'
-      },
-      'bomb_burst': {
-        name: 'Bomb Burst with Vertical Cross',
-        category: 'formation',
-        role: 'Full 6-Ship',
-        minCeiling: 8000,
-        gForce: 7.5,
-        crowdScore: 100,
-        risk: 18,
-        stress: 15,
-        description: 'Vertical climb to 8,000 ft; 4 diamond jets peel in cardinal directions while solos rocket vertically through center!'
-      },
-      'fleur_de_lis': {
-        name: 'Fleur-de-Lis 4-Way Vertical Break',
-        category: 'formation',
-        role: 'Formation (1-5)',
-        minCeiling: 8000,
-        gForce: 6.8,
-        crowdScore: 96,
-        risk: 15,
-        stress: 12,
-        description: 'High vertical climb, looping over the top into three separate floral trajectories with white smoke.'
-      },
-      'carrier_break': {
-        name: 'Tuck-Under Pitch-Up Carrier Break',
-        category: 'formation',
-        role: 'Diamond (1-4)',
-        minCeiling: 2000,
-        gForce: 6.0,
-        crowdScore: 86,
-        risk: 10,
-        stress: 8,
-        description: 'Rapid 4-ship low pass followed by staggered high-G carrier-style pitch-ups into the landing pattern.'
-      },
-
-      // --- SOLO & HERITAGE MANEUVERS ---
-      'sneak_pass': {
-        name: 'Mach 0.96 Sneak Pass',
-        category: 'solos',
-        role: 'Lead Solo (#5)',
-        minCeiling: 1500,
-        gForce: 6.5,
-        crowdScore: 98,
-        risk: 12,
-        stress: 10,
-        description: 'Low-level high-speed run from behind the crowd line bursting over center stage just below Mach 1.0.'
-      },
-      'calypso_pass': {
-        name: 'Calypso Pass (Canopy-to-Canopy)',
-        category: 'solos',
-        role: 'Solos (#5 & #6)',
-        minCeiling: 2500,
-        gForce: 3.5,
-        crowdScore: 94,
-        risk: 16,
-        stress: 8,
-        description: 'Opposing solo rolls inverted 15 to 25 feet directly above upright lead solo along runway axis.'
-      },
-      'high_alpha': {
-        name: 'High Alpha / Slow Flight Pass',
-        category: 'solos',
-        role: 'Opposing Solo (#6)',
-        minCeiling: 1500,
-        gForce: 2.0,
-        crowdScore: 84,
-        risk: 8,
-        stress: 6,
-        description: 'Aircraft pitched up 35+ degrees angle of attack at only 115 knots in full burner.'
-      },
-      'min_radius_turn': {
-        name: 'Minimum Radius 9G Turn',
-        category: 'solos',
-        role: 'Lead Solo (#5)',
-        minCeiling: 2000,
-        gForce: 9.0,
-        crowdScore: 95,
-        risk: 20,
-        stress: 18,
-        description: 'Instantaneous 9G sustained turn on full afterburners inside the airport boundary line.'
-      },
-      'tail_slide': {
-        name: 'Vertical Aerobatic Tail Slide',
-        category: 'solos',
-        role: 'Lead Solo (#5)',
-        minCeiling: 7000,
-        gForce: 5.0,
-        crowdScore: 96,
-        risk: 18,
-        stress: 16,
-        description: 'Jet climbs purely vertical until forward airspeed reaches zero, sliding backwards on its exhaust before recovery.'
-      },
-      'heritage_flight': {
-        name: 'Heritage Warbird Escort Pass',
-        category: 'solos',
-        role: 'Full Squadron + Warbird',
-        minCeiling: 1500,
-        gForce: 2.5,
-        crowdScore: 89,
-        risk: 5,
-        stress: 3,
-        description: 'Emotional slow pass paying tribute to military aviation history and combat veterans.'
       }
     };
 
@@ -2748,420 +2892,109 @@
     }
 
     /* =========================================================================
-       LIVE AIR SHOW SIMULATION & RISK ENGINE
+       ROUTINE PRESETS ACROSS FORMATION SIZES
        ========================================================================= */
-    let activeSimulation = null;
-
-    function startAirShowSimulation(showData) {
-      soundEngine.init();
-      soundEngine.playRadioBeep(1200, 0.15);
-
-      let ceilingCondition = 'High Show (Clear 12,000+ ft)';
-      if (gameState.forcedWeather === 'low') ceilingCondition = 'Low Show (Overcast 4,500 ft)';
-      else if (gameState.forcedWeather === 'flat') ceilingCondition = 'Flat Show (Deck 2,100 ft)';
-      else if (!gameState.forcedWeather) {
-        const roll = Math.random();
-        if (roll < 0.20) ceilingCondition = 'Flat Show (Deck 2,200 ft)';
-        else if (roll < 0.45) ceilingCondition = 'Low Show (Overcast 4,500 ft)';
-      }
-
-      const synergy = checkDissimilarSynergy();
-
-      activeSimulation = {
-        show: showData,
-        ceilingType: ceilingCondition,
-        step: 0,
-        maneuvers: [...gameState.currentRoutine],
-        telemetry: {
-          speed: 420,
-          g: 5.5,
-          tightness: 18,
-          crowd: 75 + (synergy.hasHistoricalRivalry ? 15 : synergy.isDissimilar ? 8 : 0)
-        },
-        hasEmergency: false
-      };
-
-      document.getElementById('sim-title').textContent = `${showData.name.toUpperCase()}`;
-      document.getElementById('sim-subtitle').textContent = `${showData.city} • Expected Crowd: ${showData.baseCrowd.toLocaleString()}`;
-      document.getElementById('sim-weather').textContent = ceilingCondition;
-      document.getElementById('sim-console').innerHTML = '';
-      document.getElementById('sim-emergency-box').classList.add('hidden');
-      document.getElementById('sim-modal').classList.remove('hidden');
-
-      appendSimLog("AIR BOSS", `Ghost Flight, cleared into the aerobatic box. Wind 200 at 10 kts. Box is sanitized and hot.`);
-      if (synergy.hasHistoricalRivalry) {
-        appendSimLog("ANNOUNCER", `Ladies and gentlemen! Direct your eyes to show center for a historic Dissimilar Air Combat demonstration!`, "text-goldfoil font-bold");
-      }
-      appendSimLog("BOSS (#1)", `Smoke ON... GO! Commencing flight demonstration.`);
-      updateSimUI();
-    }
-
-    function appendSimLog(callsign, text, color = 'text-camo-ghost') {
-      const c = document.getElementById('sim-console');
-      const div = document.createElement('div');
-      div.className = `leading-tight ${color}`;
-      div.innerHTML = `<span class="text-hudgreen font-bold">[${callsign}]</span> ${text}`;
-      c.appendChild(div);
-      c.scrollTop = c.scrollHeight;
-    }
-
-    function updateSimUI() {
-      const s = activeSimulation;
-      const progress = Math.round((s.step / s.maneuvers.length) * 100);
-      document.getElementById('sim-progress-bar').style.width = `${progress}%`;
-      document.getElementById('sim-telemetry-speed').textContent = `${s.telemetry.speed} KTS`;
-      document.getElementById('sim-telemetry-g').textContent = `${s.telemetry.g} G`;
-      document.getElementById('sim-telemetry-tightness').textContent = `${s.telemetry.tightness} INCHES`;
-      document.getElementById('sim-telemetry-crowd').textContent = `${Math.min(100, s.telemetry.crowd)}%`;
-    }
-
-    function nextSimStep() {
-      soundEngine.init();
-      const s = activeSimulation;
-      if (!s) return;
-
-      if (s.step >= s.maneuvers.length) {
-        finishAirShow();
-        return;
-      }
-
-      const manKey = s.maneuvers[s.step];
-      const man = MANEUVER_CATALOG[manKey] || { name: manKey, gForce: 5.0, crowdScore: 80, minCeiling: 1500, risk: 10 };
-
-      // Weather checks
-      if (s.ceilingType.includes('Flat') && man.minCeiling > 3500) {
-        soundEngine.playRadioBeep(620, 0.1);
-        appendSimLog("BOSS (#1)", `Cloud deck audible! Converted ${man.name} to Flat Show Low Knife-Edge Pass.`, "text-amberhud font-semibold");
-        s.telemetry.g = 4.2;
-        s.telemetry.crowd += 7;
-      } else {
-        soundEngine.playRadioBeep(940, 0.08);
-        if (man.category === 'dogfight') {
-          appendSimLog("SOLO LEAD (#5)", `Bandit spotted! Engaging: ${man.name}! Pulling ${man.gForce}G!`, "text-amberhud font-bold");
-        } else {
-          appendSimLog("BOSS (#1)", `Cadence call: "Ready, hit it... PULL!" Executing ${man.name}.`, "text-hudgreen");
-        }
-        s.telemetry.g = man.gForce;
-        s.telemetry.crowd += Math.round(man.crowdScore * 0.12);
-      }
-
-      // Check In-Flight Failure/Emergency Probability
-      const riskRating = parseFloat(getRoutineAggressivenessRisk());
-      if (!s.hasEmergency && Math.random() < (riskRating * 0.015)) {
-        triggerSimEmergency();
-        return;
-      }
-
-      s.step += 1;
-      s.telemetry.speed = 390 + Math.floor(Math.random() * 130);
-      s.telemetry.tightness = Math.max(12, 20 - Math.floor(gameState.proficiency * 0.09));
-
-      updateSimUI();
-
-      if (s.step >= s.maneuvers.length) {
-        document.getElementById('sim-action-btn').innerHTML = `<span>CONCLUDE DEMONSTRATION & LAND</span>`;
-      }
-    }
-
-    function triggerSimEmergency() {
-      const s = activeSimulation;
-      s.hasEmergency = true;
-      soundEngine.playWarningSquawk();
-
-      const events = [
-        {
-          title: "PHYSIOLOGICAL: SOLO G-LOC TUNNEL VISION",
-          desc: "Lead Solo reports gray-out and tunnel vision after sustaining 9.0 Gs in rolling scissors dogfight.",
-          choices: [
-            { text: "Command Solo to Ease G to 4.0 Max", riskDelta: -10, crowdDelta: -4 },
-            { text: "Call 'Knock It Off' & Orbit Out", riskDelta: -20, crowdDelta: -12 }
-          ]
-        },
-        {
-          title: "MECHANICAL: HYDRAULIC PRESSURE LOSS ON #4 SLOT",
-          desc: "Slot Jet master caution sounds: Primary hydraulic pressure dropping to 1,750 PSI in turbulent wake.",
-          choices: [
-            { text: "Abort Slot Jet to Emergency Runway", riskDelta: -18, crowdDelta: -5 },
-            { text: "Switch to Backup Hyds & Tighten Diamond", riskDelta: 15, crowdDelta: 10 }
-          ]
-        },
-        {
-          title: "AIRSPACE: CROSSWIND DRIFT NEAR FAA 500-FT BOX",
-          desc: "Sudden 25-knot microburst pushes the formation toward the spectator fence buffer line.",
-          choices: [
-            { text: "Aggressive Breakaway Away From Crowd", riskDelta: -15, crowdDelta: -2 },
-            { text: "Hold Line on Full Afterburners", riskDelta: 20, crowdDelta: 15 }
-          ]
-        },
-        {
-          title: "ENVIRONMENTAL: BIRD STRIKE THROUGH ENGINE INTAKE",
-          desc: "Opposing Solo strikes birds on low-level tactical merge! Compressor stall warning!",
-          choices: [
-            { text: "Declare In-Flight Emergency & Climb to Eject Vector", riskDelta: -25, crowdDelta: -8 },
-            { text: "Clear Compressor Stall & Rejoin Pattern", riskDelta: 25, crowdDelta: 12 }
-          ]
-        }
+    function presetSingleShip() {
+      soundEngine.playRadioBeep(920, 0.08);
+      gameState.currentRoutine = [
+        'solo_unrestricted_climb',
+        'min_radius_turn',
+        'solo_square_loop',
+        'high_alpha',
+        'solo_post_stall_cobra',
+        'sneak_pass',
+        'heritage_flight'
       ];
-
-      const chosen = events[Math.floor(Math.random() * events.length)];
-      document.getElementById('emergency-title').textContent = chosen.title;
-      document.getElementById('emergency-desc').textContent = chosen.desc;
-
-      const choiceBox = document.getElementById('emergency-choices');
-      choiceBox.innerHTML = chosen.choices.map((c) => `
-        <button onclick="resolveEmergency(${c.riskDelta}, ${c.crowdDelta})" class="px-3 py-1.5 rounded bg-red-900 hover:bg-red-800 border border-red-400 text-white font-mono text-xs font-semibold">
-          ${c.text}
-        </button>
-      `).join('');
-
-      document.getElementById('sim-emergency-box').classList.remove('hidden');
-      document.getElementById('sim-action-btn').disabled = true;
-    }
-
-    function resolveEmergency(riskDelta, crowdDelta) {
-      const s = activeSimulation;
-      s.telemetry.crowd = Math.max(10, s.telemetry.crowd + crowdDelta);
-      document.getElementById('sim-emergency-box').classList.add('hidden');
-      document.getElementById('sim-action-btn').disabled = false;
-      soundEngine.playRadioBeep(980, 0.1);
-      appendSimLog("BOSS (#1)", "Emergency procedures implemented calmly. Formation integrity restored.", "text-radar font-bold");
-      s.step += 1;
-      updateSimUI();
-    }
-
-    function executeCatastrophicCrashScenario() {
-      gameState.crashesCount += 1;
-      gameState.mishapHistoryCount += 1;
-      gameState.prestige = Math.max(10, gameState.prestige - 30);
-      gameState.hullInsuranceRate += 25000;
-
-      const crashedAirframe = gameState.airframes[3];
-      crashedAirframe.status = 'NMC';
-      crashedAirframe.engineLife = 0;
-      crashedAirframe.fatigue = 100;
-
-      gameState.pilots[3].morale = 40;
-      gameState.pilots[3].fatigue = 90;
-
-      addLog("CATASTROPHIC MISHAP: In-flight incident during high-G dogfight pass! Pilot ejected safely via zero-zero seat. Airframe hull loss logged. Safety Investigation Board convened.");
-      toast("CATASTROPHIC INCIDENT OCCURRED! Airframe lost.", "error");
-
-      if (activeSimulation) {
-        document.getElementById('sim-modal').classList.add('hidden');
-        activeSimulation = null;
-      }
-
+      toast("Single-Ship Tactical Solo Routine Loaded (7 Maneuvers)", "info");
       saveGameState();
-      renderAll();
+      renderChoreographer();
     }
 
-    function finishAirShow() {
-      const s = activeSimulation;
+    function presetTwoShipSolos() {
+      soundEngine.playRadioBeep(920, 0.08);
+      gameState.currentRoutine = [
+        'dact_merge',
+        'calypso_pass',
+        'opposing_knife_edge',
+        'opposing_360',
+        'section_high_speed_roll',
+        'tuck_over_roll',
+        'dact_rolling_scissors',
+        'sneak_pass'
+      ];
+      toast("2-Ship Opposing Solos Routine Loaded (8 Maneuvers)", "info");
+      saveGameState();
+      renderChoreographer();
+    }
+
+    function presetFourShipDiamond() {
+      soundEngine.playRadioBeep(920, 0.08);
+      gameState.currentRoutine = [
+        'diamond_takeoff',
+        'diamond_360',
+        'diamond_roll',
+        'trail_to_diamond_loop',
+        'diamond_dirty_loop',
+        'diamond_roll',
+        'carrier_break',
+        'delta_breakout_landing'
+      ];
+      toast("4-Ship Diamond Precision Routine Loaded (8 Maneuvers)", "info");
+      saveGameState();
+      renderChoreographer();
+    }
+
+    function presetDeltaClassic() {
+      soundEngine.playRadioBeep(920, 0.08);
+      gameState.currentRoutine = [
+        'diamond_takeoff',
+        'diamond_360',
+        'delta_360_pass',
+        'sneak_pass',
+        'calypso_pass',
+        'delta_roll',
+        'delta_loop',
+        'fleur_de_lis',
+        'bomb_burst',
+        'delta_breakout_landing'
+      ];
+      toast("6-Ship Delta Classic Routine Loaded (10 Maneuvers)", "info");
+      saveGameState();
+      renderChoreographer();
+    }
+
+    function presetMegaHeadline() {
       soundEngine.playSuccessChime();
-
-      const prestigeFactor = gameState.prestige / 75;
-      const routineExcitementFactor = s.telemetry.crowd / 80;
-      const actualAttendance = Math.round(s.show.baseCrowd * prestigeFactor * routineExcitementFactor);
-      gameState.totalAttendance += actualAttendance;
-
-      const gateCut = Math.round(actualAttendance * 1.55);
-      const merchConcessions = Math.round(actualAttendance * 0.90);
-      const sponsorBonuses = calculateActiveSponsorShowBonuses();
-      const totalEarned = s.show.purse + gateCut + merchConcessions + sponsorBonuses;
-
-      let fuelBurnTotal = 0;
-      gameState.airframes.slice(0, 6).forEach(a => {
-        const j = JET_DATABASE[a.jetModel] || JET_DATABASE['mig29'];
-        fuelBurnTotal += j.fuelBurnRate;
-      });
-
-      const fuelCost = Math.round(fuelBurnTotal * 1.8);
-      const netProfit = totalEarned - fuelCost;
-
-      gameState.funds += netProfit;
-      gameState.fuelGallons -= fuelBurnTotal;
-      gameState.prestige = Math.min(100, gameState.prestige + 7);
-
-      gameState.completedShowLog.push({
-        name: s.show.name,
-        city: s.show.city,
-        week: s.show.week,
-        attendance: actualAttendance,
-        totalRevenue: totalEarned,
-        netProfit: netProfit
-      });
-
-      gameState.pilots.forEach(p => {
-        p.fatigue = Math.min(100, p.fatigue + 15);
-        p.morale = Math.min(100, p.morale + 6);
-      });
-
-      gameState.airframes.slice(0, 6).forEach(a => {
-        a.hours += 3;
-        a.fatigue = Math.min(100, a.fatigue + 4);
-        a.engineLife = Math.max(0, a.engineLife - 2);
-      });
-
-      addLog(`AIR SHOW COMPLETED: Headlined ${s.show.name}! Recorded Attendance: ${actualAttendance.toLocaleString()} spectators. Sponsor Show Bonuses: +$${sponsorBonuses.toLocaleString()}. Weekend Net Profit: +$${netProfit.toLocaleString()}.`);
-      toast(`Show Spectacular! Attendance: ${actualAttendance.toLocaleString()}`, "success");
-
-      document.getElementById('sim-modal').classList.add('hidden');
-      activeSimulation = null;
+      gameState.currentRoutine = [
+        'diamond_takeoff',
+        'dact_merge',
+        'diamond_360',
+        'calypso_pass',
+        'opposing_knife_edge',
+        'delta_360_pass',
+        'min_radius_turn',
+        'dact_rolling_scissors',
+        'delta_roll',
+        'sneak_pass',
+        'fleur_de_lis',
+        'bomb_burst'
+      ];
+      toast("★ 12-Maneuver Mega Air Show Headline Loaded (~58 Min Full Show)", "success");
       saveGameState();
-      renderAll();
+      renderChoreographer();
     }
-    function filterSponsorTiers(tier) {
-      soundEngine.playRadioBeep(920, 0.05);
-      currentSponsorFilter = tier;
-      document.querySelectorAll('.sponsor-filter-btn').forEach(b => {
-        if (b.dataset.tier === tier) {
-          b.className = 'sponsor-filter-btn px-2.5 py-1 rounded bg-camo-slate text-hudgreen font-bold';
+
+    function filterManeuvers(cat) {
+      soundEngine.playRadioBeep(900, 0.05);
+      currentManeuverFilter = cat;
+      document.querySelectorAll('.maneuver-filter-btn').forEach(btn => {
+        if (btn.dataset.mcat === cat) {
+          btn.className = 'maneuver-filter-btn px-2 py-0.5 rounded bg-camo-slate text-xs font-mono text-hudgreen font-bold';
         } else {
-          b.className = 'sponsor-filter-btn px-2.5 py-1 rounded text-camo-titanium hover:text-white';
+          btn.className = 'maneuver-filter-btn px-2 py-0.5 rounded text-xs font-mono text-camo-titanium hover:text-white';
         }
       });
-      renderFinances();
-    }
-
-    function renderFinances() {
-      document.getElementById('fin-treasury').textContent = `$${gameState.funds.toLocaleString()}`;
-      document.getElementById('fin-weekly-rev').textContent = `+$${calculateWeeklySponsorRevenue().toLocaleString()}`;
-      document.getElementById('fin-weekly-exp').textContent = `-$${calculateWeeklyBurn().toLocaleString()}`;
-      document.getElementById('fin-insurance-rate').textContent = `$${gameState.hullInsuranceRate.toLocaleString()}/wk`;
-
-      if (!gameState.activeSponsorIds) {
-        gameState.activeSponsorIds = ['buckeye_aero', 'chronos_watches', 'isaacman_foundation'];
-      }
-
-      document.getElementById('active-sponsor-count-badge').textContent = `${gameState.activeSponsorIds.length} Active / 15 Total Sponsors`;
-
-      // Active Sponsors Cards
-      const activeContainer = document.getElementById('active-sponsors-grid');
-      const activeSponsors = SPONSOR_CATALOG.filter(s => gameState.activeSponsorIds.includes(s.id));
-
-      if (activeSponsors.length === 0) {
-        activeContainer.innerHTML = `<div class="col-span-full p-4 rounded-xl bg-camo-black border border-camo-titanium/20 text-center font-mono text-xs text-camo-titanium">No active sponsors signed. Browse the catalog below to sign corporate backers!</div>`;
-      } else {
-        activeContainer.innerHTML = activeSponsors.map(s => {
-          let tierBadge = `<span class="px-2 py-0.5 rounded bg-camo-charcoal text-camo-ghost text-[9px] font-bold">GRASSROOTS</span>`;
-          if (s.tier === 'mid') tierBadge = `<span class="px-2 py-0.5 rounded bg-cyan-950 text-cyanview border border-cyanview/30 text-[9px] font-bold">COMMERCIAL</span>`;
-          if (s.tier === 'high') tierBadge = `<span class="px-2 py-0.5 rounded bg-amberhud/20 text-amberhud border border-amberhud/40 text-[9px] font-bold">AEROSPACE GIANT</span>`;
-
-          return `
-            <div class="p-3.5 rounded-xl bg-camo-black border border-hudgreen/40 shadow-sm flex flex-col justify-between space-y-3 font-mono text-xs">
-              <div>
-                <div class="flex items-center justify-between gap-1 mb-1">
-                  <span class="font-hud font-bold text-sm text-white truncate">${s.name}</span>
-                  ${tierBadge}
-                </div>
-                <p class="text-[11px] text-camo-titanium line-clamp-2">${s.description}</p>
-              </div>
-
-              <div class="bg-camo-charcoal/60 p-2 rounded border border-camo-titanium/20 space-y-1 text-[11px]">
-                <div class="flex justify-between">
-                  <span class="text-camo-titanium">Weekly Stipend:</span>
-                  <span class="text-hudgreen font-bold">+$${s.weeklyStipend.toLocaleString()}/wk</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-camo-titanium">Air Show Bonus:</span>
-                  <span class="text-goldfoil font-bold">+$${s.perShowBonus.toLocaleString()}/show</span>
-                </div>
-              </div>
-
-              <button onclick="cancelSponsorContract('${s.id}')" class="w-full py-1.5 rounded bg-red-950/40 hover:bg-red-950 border border-warningred/40 text-red-300 text-[10px] font-bold transition">
-                TERMINATE CONTRACT
-              </button>
-            </div>
-          `;
-        }).join('');
-      }
-
-      // Available Sponsors Cards
-      const availContainer = document.getElementById('available-sponsors-grid');
-      const filteredAvailable = SPONSOR_CATALOG.filter(s => {
-        if (gameState.activeSponsorIds.includes(s.id)) return false;
-        if (currentSponsorFilter === 'all') return true;
-        return s.tier === currentSponsorFilter;
-      });
-
-      if (filteredAvailable.length === 0) {
-        availContainer.innerHTML = `<div class="col-span-full p-4 rounded-xl bg-camo-black border border-camo-titanium/20 text-center font-mono text-xs text-camo-titanium">All sponsors in this tier are currently signed!</div>`;
-      } else {
-        const estExcitement = parseInt(document.getElementById('routine-crowd-score').textContent) || 85;
-
-        availContainer.innerHTML = filteredAvailable.map(s => {
-          const meetsPrestige = gameState.prestige >= s.prestigeReq;
-          const meetsClean = !s.cleanRecordReq || (gameState.crashesCount === 0);
-          const meetsExcitement = estExcitement >= s.minExcitementReq;
-          const eligible = meetsPrestige && meetsClean && meetsExcitement;
-
-          let tierBadge = `<span class="px-2 py-0.5 rounded bg-camo-charcoal text-camo-ghost text-[9px] font-bold">GRASSROOTS</span>`;
-          if (s.tier === 'mid') tierBadge = `<span class="px-2 py-0.5 rounded bg-cyan-950 text-cyanview border border-cyanview/30 text-[9px] font-bold">COMMERCIAL</span>`;
-          if (s.tier === 'high') tierBadge = `<span class="px-2 py-0.5 rounded bg-amberhud/20 text-amberhud border border-amberhud/40 text-[9px] font-bold">AEROSPACE GIANT</span>`;
-
-          return `
-            <div class="p-3.5 rounded-xl bg-camo-black border border-camo-titanium/20 flex flex-col justify-between space-y-3 font-mono text-xs">
-              <div>
-                <div class="flex items-center justify-between gap-1 mb-1">
-                  <span class="font-hud font-bold text-sm text-white truncate">${s.name}</span>
-                  ${tierBadge}
-                </div>
-                <p class="text-[11px] text-camo-titanium line-clamp-2">${s.description}</p>
-              </div>
-
-              <div class="bg-camo-charcoal/60 p-2 rounded border border-camo-titanium/20 space-y-1 text-[11px]">
-                <div class="flex justify-between">
-                  <span class="text-camo-titanium">Weekly Stipend:</span>
-                  <span class="text-hudgreen font-bold">+$${s.weeklyStipend.toLocaleString()}/wk</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-camo-titanium">Show Bonus:</span>
-                  <span class="text-goldfoil font-bold">+$${s.perShowBonus.toLocaleString()}/show</span>
-                </div>
-                <div class="pt-1 border-t border-camo-titanium/20 flex flex-wrap gap-2 text-[10px]">
-                  <span class="${meetsPrestige ? 'text-hudgreen' : 'text-warningred'}">Req: ${s.prestigeReq} Pres</span>
-                  <span class="${meetsExcitement ? 'text-hudgreen' : 'text-warningred'}">Req: ${s.minExcitementReq}% Excitement</span>
-                  ${s.cleanRecordReq ? `<span class="${meetsClean ? 'text-hudgreen' : 'text-warningred'}">Zero Crashes</span>` : ''}
-                </div>
-              </div>
-
-              <button onclick="signSponsor('${s.id}')" class="w-full py-1.5 rounded text-[11px] font-bold transition ${
-                eligible ? 'bg-amberhud hover:bg-amber-500 text-black shadow-md' : 'bg-camo-charcoal text-camo-titanium/60 border border-camo-titanium/20 cursor-not-allowed'
-              }" ${!eligible ? 'disabled' : ''}>
-                ${eligible ? 'SIGN SPONSOR CONTRACT' : 'PREREQUISITES UNMET'}
-              </button>
-            </div>
-          `;
-        }).join('');
-      }
-    }
-
-    function signSponsor(id) {
-      soundEngine.playSuccessChime();
-      if (!gameState.activeSponsorIds) gameState.activeSponsorIds = [];
-      if (!gameState.activeSponsorIds.includes(id)) {
-        gameState.activeSponsorIds.push(id);
-      }
-      const s = SPONSOR_CATALOG.find(x => x.id === id);
-      const name = s ? s.name : id;
-      addLog(`CONTRACT FINALIZED: Signed official multi-week sponsorship agreement with ${name}!`);
-      toast(`Signed Contract: ${name}`, "success");
-      saveGameState();
-      renderAll();
-    }
-
-    function cancelSponsorContract(id) {
-      soundEngine.playRadioBeep(650, 0.08);
-      const s = SPONSOR_CATALOG.find(x => x.id === id);
-      const name = s ? s.name : id;
-      const ok = confirm(`Terminate sponsorship partnership with ${name}? Weekly stipends and show completion bonuses will cease.`);
-      if (!ok) return;
-
-      gameState.activeSponsorIds = (gameState.activeSponsorIds || []).filter(x => x !== id);
-      addLog(`CONTRACT TERMINATED: Ended active endorsement agreement with ${name}.`);
-      toast(`Terminated contract with ${name}`, "info");
-      saveGameState();
-      renderAll();
+      renderChoreographer();
     }
 
     function renderChoreographer() {
@@ -3172,6 +3005,17 @@
         const m = MANEUVER_CATALOG[manKey];
         if (!m) return '';
         const isDogfight = m.category === 'dogfight';
+        const isSingle = m.category === 'single';
+        const isTwo = m.category === 'twoship';
+        const isFour = m.category === 'fourship';
+        const isDelta = m.category === 'delta';
+
+        let badge = '<span class="px-1.5 py-0.2 rounded bg-camo-charcoal text-camo-ghost text-[9px] font-bold">SOLO</span>';
+        if (isDogfight) badge = '<span class="px-1.5 py-0.2 rounded bg-amberhud/20 text-amberhud text-[9px] font-bold">DACT</span>';
+        if (isTwo) badge = '<span class="px-1.5 py-0.2 rounded bg-cyan-950 text-cyanview text-[9px] font-bold">2-SHIP</span>';
+        if (isFour) badge = '<span class="px-1.5 py-0.2 rounded bg-emerald-950 text-hudgreen text-[9px] font-bold">4-SHIP</span>';
+        if (isDelta) badge = '<span class="px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 text-[9px] font-bold">DELTA</span>';
+
         return `
           <div class="flex items-center justify-between p-3 rounded-lg bg-camo-black border ${isDogfight ? 'border-amberhud/40' : 'border-camo-titanium/20'} text-xs font-mono">
             <div class="flex items-center gap-3">
@@ -3179,7 +3023,7 @@
               <div>
                 <span class="text-white font-bold flex items-center gap-1.5">
                   ${m.name}
-                  ${isDogfight ? '<span class="px-1.5 py-0.2 rounded bg-amberhud/20 text-amberhud text-[9px] font-bold">DACT</span>' : ''}
+                  ${badge}
                 </span>
                 <span class="text-camo-titanium text-[10px] block">${m.role} • Min: ${m.minCeiling}ft • Peak: ${m.gForce}G • Risk: ${m.risk}%</span>
               </div>
@@ -3210,7 +3054,8 @@
       }).join('');
 
       document.getElementById('routine-maneuver-count').textContent = gameState.currentRoutine.length;
-      document.getElementById('routine-duration').textContent = `${gameState.currentRoutine.length * 4.5 + 8} Mins`;
+      const calculatedDuration = Math.round(gameState.currentRoutine.length * 4.2 + 8);
+      document.getElementById('routine-duration').textContent = `${calculatedDuration} Mins`;
 
       let totalScore = 0;
       let highestCeiling = 1500;
@@ -3245,8 +3090,8 @@
     }
 
     function addManeuver(key) {
-      if (gameState.currentRoutine.length >= 12) {
-        toast("Maximum routine size reached (12 maneuvers max) for FAA box clearance window.", "error");
+      if (gameState.currentRoutine.length >= 14) {
+        toast("Maximum routine size reached (14 maneuvers max) for FAA air space slot.", "error");
         return;
       }
       soundEngine.playRadioBeep(920, 0.08);
@@ -3441,6 +3286,429 @@
 
       const currShow = TOUR_SCHEDULE_DATA.find(s => s.week === gameState.week);
       document.getElementById('tour-current-location').textContent = currShow ? `${currShow.name} (${currShow.city})` : 'NAF El Centro (Winter Training Base)';
+    }
+
+    /* =========================================================================
+       SPONSORSHIP LEDGER & FINANCIAL PORTFOLIO
+       ========================================================================= */
+    function filterSponsorTiers(tier) {
+      soundEngine.playRadioBeep(900, 0.05);
+      currentSponsorFilter = tier;
+      document.querySelectorAll('.sponsor-filter-btn').forEach(btn => {
+        if (btn.dataset.tier === tier) {
+          btn.className = 'sponsor-filter-btn px-2.5 py-1 rounded bg-camo-slate text-hudgreen font-bold';
+        } else {
+          btn.className = 'sponsor-filter-btn px-2.5 py-1 rounded text-camo-titanium hover:text-white';
+        }
+      });
+      renderFinances();
+    }
+
+    function signSponsor(sponsorId) {
+      soundEngine.init();
+      const sp = SPONSOR_CATALOG.find(s => s.id === sponsorId);
+      if (!sp) return;
+
+      if (!gameState.activeSponsorIds) gameState.activeSponsorIds = [];
+      if (gameState.activeSponsorIds.includes(sponsorId)) return;
+
+      // Check qualifications
+      if (gameState.prestige < sp.prestigeReq) {
+        soundEngine.playWarningSquawk();
+        toast(`Prestige requirement not met! Requires ${sp.prestigeReq} Prestige.`, "error");
+        return;
+      }
+      if (sp.cleanRecordReq && gameState.crashesCount > 0) {
+        soundEngine.playWarningSquawk();
+        toast("Contract Rejected: Sponsor requires zero recorded crash incidents.", "error");
+        return;
+      }
+
+      gameState.activeSponsorIds.push(sponsorId);
+      soundEngine.playSuccessChime();
+      addLog(`SPONSOR CONTRACT SIGNED: ${sp.name} (${sp.tier.toUpperCase()}). Stipend: +$${sp.weeklyStipend.toLocaleString()}/wk, +$${sp.perShowBonus.toLocaleString()} per show.`);
+      toast(`Signed with ${sp.name}!`, "success");
+      saveGameState();
+      renderAll();
+    }
+
+    function cancelSponsor(sponsorId) {
+      const sp = SPONSOR_CATALOG.find(s => s.id === sponsorId);
+      if (!sp) return;
+      const ok = confirm(`Terminate sponsorship contract with ${sp.name}?`);
+      if (!ok) return;
+
+      gameState.activeSponsorIds = (gameState.activeSponsorIds || []).filter(id => id !== sponsorId);
+      soundEngine.playRadioBeep(700, 0.08);
+      addLog(`SPONSOR CONTRACT TERMINATED: Relinquished commercial partnership with ${sp.name}.`);
+      toast(`Contract cancelled: ${sp.name}`, "info");
+      saveGameState();
+      renderAll();
+    }
+
+    function renderFinances() {
+      if (!gameState.activeSponsorIds) {
+        gameState.activeSponsorIds = ['buckeye_aero', 'chronos_watches', 'isaacman_foundation'];
+      }
+
+      const rev = calculateWeeklySponsorRevenue();
+      const exp = calculateWeeklyBurn();
+
+      document.getElementById('fin-treasury').textContent = `$${gameState.funds.toLocaleString()}`;
+      document.getElementById('fin-weekly-rev').textContent = `+$${rev.toLocaleString()}`;
+      document.getElementById('fin-weekly-exp').textContent = `-$${exp.toLocaleString()}`;
+      document.getElementById('fin-insurance-rate').textContent = `$${gameState.hullInsuranceRate.toLocaleString()}/wk`;
+      document.getElementById('active-sponsor-count-badge').textContent = `${gameState.activeSponsorIds.length} Active Contracts`;
+
+      // Active Sponsors Grid
+      const activeGrid = document.getElementById('active-sponsors-grid');
+      const activeList = gameState.activeSponsorIds.map(id => SPONSOR_CATALOG.find(s => s.id === id)).filter(Boolean);
+
+      if (activeList.length === 0) {
+        activeGrid.innerHTML = `
+          <div class="hud-card p-4 rounded-xl col-span-full text-center text-camo-titanium font-mono text-xs">
+            No active corporate or aerospace contracts. Review available proposals below to secure weekly funding.
+          </div>
+        `;
+      } else {
+        activeGrid.innerHTML = activeList.map(sp => `
+          <div class="hud-card rounded-xl p-3.5 space-y-2 border-l-4 ${sp.tier === 'high' ? 'border-l-amberhud border-amberhud/40' : sp.tier === 'mid' ? 'border-l-cyanview border-cyanview/40' : 'border-l-hudgreen border-hudgreen/40'}">
+            <div class="flex items-center justify-between">
+              <h4 class="font-hud font-bold text-sm text-white">${sp.name}</h4>
+              <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-camo-black font-bold uppercase ${sp.tier === 'high' ? 'text-amberhud' : sp.tier === 'mid' ? 'text-cyanview' : 'text-hudgreen'}">${sp.tier}</span>
+            </div>
+            <p class="text-[11px] font-mono text-camo-titanium line-clamp-2">${sp.description}</p>
+            <div class="p-2 rounded bg-camo-black/70 border border-camo-titanium/20 text-[10px] font-mono flex justify-between">
+              <span>Weekly: <b class="text-hudgreen">+$${sp.weeklyStipend.toLocaleString()}</b></span>
+              <span>Per-Show Bonus: <b class="text-goldfoil">+$${sp.perShowBonus.toLocaleString()}</b></span>
+            </div>
+            <button onclick="cancelSponsor('${sp.id}')" class="w-full py-1 rounded bg-camo-charcoal hover:bg-red-950/40 text-red-300 border border-warningred/30 text-[10px] font-mono">
+              TERMINATE PARTNERSHIP
+            </button>
+          </div>
+        `).join('');
+      }
+
+      // Available Proposals Grid
+      const availGrid = document.getElementById('available-sponsors-grid');
+      const filteredCatalog = SPONSOR_CATALOG.filter(sp => {
+        if (currentSponsorFilter !== 'all' && sp.tier !== currentSponsorFilter) return false;
+        return !gameState.activeSponsorIds.includes(sp.id);
+      });
+
+      if (filteredCatalog.length === 0) {
+        availGrid.innerHTML = `
+          <div class="hud-card p-4 rounded-xl col-span-full text-center text-camo-titanium font-mono text-xs">
+            All sponsors in this category have been signed or are currently committed.
+          </div>
+        `;
+      } else {
+        availGrid.innerHTML = filteredCatalog.map(sp => {
+          const meetsPrestige = gameState.prestige >= sp.prestigeReq;
+          const meetsSafety = !sp.cleanRecordReq || gameState.crashesCount === 0;
+          const eligible = meetsPrestige && meetsSafety;
+
+          return `
+            <div class="hud-card rounded-xl p-3.5 space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="font-hud font-bold text-sm text-white">${sp.name}</h4>
+                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-camo-black font-bold uppercase ${sp.tier === 'high' ? 'text-amberhud' : sp.tier === 'mid' ? 'text-cyanview' : 'text-hudgreen'}">${sp.tier}</span>
+              </div>
+              <p class="text-[11px] font-mono text-camo-titanium line-clamp-2">${sp.description}</p>
+              
+              <div class="space-y-1 text-[10px] font-mono bg-camo-black/60 p-2 rounded border border-camo-titanium/20">
+                <div class="flex justify-between">
+                  <span class="text-camo-titanium">Stipend / Bonus:</span>
+                  <span class="text-white font-bold">+$${sp.weeklyStipend.toLocaleString()} / +$${sp.perShowBonus.toLocaleString()}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-camo-titanium">Required Prestige:</span>
+                  <span class="${meetsPrestige ? 'text-hudgreen' : 'text-warningred font-bold'}">${sp.prestigeReq} (Current: ${gameState.prestige})</span>
+                </div>
+                ${sp.cleanRecordReq ? `
+                  <div class="flex justify-between">
+                    <span class="text-camo-titanium">Safety Record:</span>
+                    <span class="${meetsSafety ? 'text-hudgreen' : 'text-warningred font-bold'}">${meetsSafety ? 'ZERO CRASH RECORD OK' : 'DISQUALIFIED (PRIOR CRASH)'}</span>
+                  </div>
+                ` : ''}
+              </div>
+
+              <button onclick="signSponsor('${sp.id}')" ${!eligible ? 'disabled' : ''} class="w-full py-1.5 rounded font-mono font-bold text-xs ${eligible ? 'bg-camo-charcoal hover:bg-camo-slate text-hudgreen border border-hudgreen/40' : 'bg-camo-black text-camo-titanium border border-camo-titanium/20 cursor-not-allowed opacity-50'}">
+                ${eligible ? 'SIGN SPONSOR CONTRACT' : 'PREREQUISITES UNMET'}
+              </button>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    /* =========================================================================
+       LIVE AIR SHOW & DACT SIMULATION ENGINE
+       ========================================================================= */
+    let currentSimData = {
+      show: null,
+      maneuvers: [],
+      currentIdx: 0,
+      weather: 'high',
+      crowdScoreAccum: 0,
+      emergencyActive: false
+    };
+
+    function startAirShowSimulation(showData) {
+      soundEngine.init();
+      soundEngine.playRadioBeep(980, 0.12);
+
+      const showCeiling = gameState.forcedWeather === 'flat' ? 2200 :
+                           gameState.forcedWeather === 'low' ? 5000 :
+                           gameState.forcedWeather === 'high' ? 12000 :
+                           showData.ceiling || 8000;
+
+      let weatherType = 'HIGH SHOW';
+      if (showCeiling < 3500) weatherType = 'FLAT SHOW (LOW CEILING)';
+      else if (showCeiling < 8000) weatherType = 'LOW SHOW (OVERCAST)';
+
+      currentSimData = {
+        show: showData,
+        maneuvers: [...gameState.currentRoutine],
+        currentIdx: 0,
+        weather: weatherType,
+        crowdScoreAccum: 0,
+        emergencyActive: false
+      };
+
+      document.getElementById('sim-title').textContent = `${showData.name.toUpperCase()} — LIVE AIR SHOW`;
+      document.getElementById('sim-subtitle').textContent = `${showData.city} • Performing ${currentSimData.maneuvers.length} Routine Maneuvers`;
+      document.getElementById('sim-weather').textContent = `${weatherType} (${showCeiling.toLocaleString()} FT)`;
+      document.getElementById('sim-progress-bar').style.width = '0%';
+      document.getElementById('sim-status-label').textContent = 'Diamond & Solos rolling on runway. Demonstration clearance received.';
+      document.getElementById('sim-action-btn').innerHTML = `<span>BEGIN DEMONSTRATION</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>`;
+
+      const consoleBox = document.getElementById('sim-console');
+      consoleBox.innerHTML = `
+        <div class="text-camo-titanium">[TOWER]: Flight demonstration box is active and sterile. Surface winds 090 at 8 knots. Clearance to enter show box granted.</div>
+        <div class="text-hudgreen">[BOSS]: "Ghost Flight, check in. Smoke on, canopy locked, hit the burner on three... two... one... HACK!"</div>
+      `;
+      document.getElementById('sim-emergency-box').classList.add('hidden');
+      document.getElementById('sim-modal').classList.remove('hidden');
+    }
+
+    function closeSimModal() {
+      document.getElementById('sim-modal').classList.add('hidden');
+      currentSimData.emergencyActive = false;
+    }
+
+    function nextSimStep() {
+      soundEngine.init();
+
+      if (currentSimData.emergencyActive) {
+        soundEngine.playWarningSquawk();
+        toast("Resolve the in-flight emergency prompt before continuing demonstration!", "error");
+        return;
+      }
+
+      if (currentSimData.currentIdx >= currentSimData.maneuvers.length) {
+        concludeAirShow();
+        return;
+      }
+
+      const manKey = currentSimData.maneuvers[currentSimData.currentIdx];
+      const m = MANEUVER_CATALOG[manKey] || { name: 'Standard Pass', role: 'Full Team', gForce: 5.0, crowdScore: 85, risk: 10 };
+      const consoleBox = document.getElementById('sim-console');
+
+      // Check random emergency chance based on aggressiveness risk
+      const riskVal = parseFloat(getRoutineAggressivenessRisk());
+      const roll = Math.random() * 100;
+      if (roll < (riskVal * 0.45)) {
+        triggerSimEmergency();
+        return;
+      }
+
+      // Normal maneuver execution
+      soundEngine.playTurbineRumble();
+      soundEngine.playRadioBeep(880 + (currentSimData.currentIdx * 20), 0.06);
+
+      const progress = Math.round(((currentSimData.currentIdx + 1) / currentSimData.maneuvers.length) * 100);
+      document.getElementById('sim-progress-bar').style.width = `${progress}%`;
+
+      const speedVal = 380 + Math.floor(Math.random() * 160);
+      const missDist = 16 + Math.floor(Math.random() * 8);
+      const curCrowd = Math.min(100, Math.round(m.crowdScore + (Math.random() * 5)));
+      currentSimData.crowdScoreAccum += curCrowd;
+
+      document.getElementById('sim-telemetry-speed').textContent = `${speedVal} KTS`;
+      document.getElementById('sim-telemetry-g').textContent = `${m.gForce.toFixed(1)} G`;
+      document.getElementById('sim-telemetry-tightness').textContent = `${missDist} INCHES`;
+      document.getElementById('sim-telemetry-crowd').textContent = `${curCrowd}%`;
+
+      const leadSoloJet = JET_DATABASE[gameState.airframes[4].jetModel].shortName;
+      const oppSoloJet = JET_DATABASE[gameState.airframes[5].jetModel].shortName;
+
+      const chatterLine = document.createElement('div');
+      chatterLine.className = 'text-white border-l-2 border-hudgreen pl-2 py-0.5';
+      if (m.category === 'dogfight') {
+        chatterLine.innerHTML = `<span class="text-amberhud">[DACT DOGFIGHT]:</span> Executing <b>${m.name}</b> (${leadSoloJet} vs ${oppSoloJet}). Closing at ${speedVal} kts! Pulling ${m.gForce}G!`;
+      } else {
+        chatterLine.innerHTML = `<span class="text-hudgreen">[SHOW BOX]:</span> ${m.role} established in <b>${m.name}</b>. Smoke trails crisp. Spotters report canopy spacing welded!`;
+      }
+      consoleBox.appendChild(chatterLine);
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+
+      // Increment step
+      currentSimData.currentIdx++;
+
+      if (currentSimData.currentIdx >= currentSimData.maneuvers.length) {
+        document.getElementById('sim-action-btn').innerHTML = `<span>RECOVER FLEET & CONCLUDE</span>`;
+        document.getElementById('sim-status-label').textContent = 'Final bomb burst complete. Diamond and solos in carrier break for landing.';
+      } else {
+        document.getElementById('sim-action-btn').innerHTML = `<span>NEXT MANEUVER (${currentSimData.currentIdx + 1}/${currentSimData.maneuvers.length})</span>`;
+      }
+    }
+
+    function triggerSimEmergency() {
+      currentSimData.emergencyActive = true;
+      soundEngine.playWarningSquawk();
+
+      const scenarios = [
+        {
+          title: 'CAUTION: HIGH-G TUNNEL VISION / GRAY-OUT (#5 LEAD SOLO)',
+          desc: 'Lead solo reports tunnel vision during a 9.2G sustained turn. Blood pressure in brain dropping near G-LOC boundary.',
+          choices: [
+            { text: 'Ease G-load & widen turn radius (-10 pts, safe recovery)', deltaScore: -10, safe: true },
+            { text: 'Engage Anti-G strain maneuver & hold flight line (Risk G-LOC)', deltaScore: 10, safe: Math.random() > 0.4 }
+          ]
+        },
+        {
+          title: 'WARNING: BIRD STRIKE & ENGINE SURGE (#2 LEFT WING)',
+          desc: 'Flock of gulls crossed the runway threshold. Aircraft #2 ingested debris with severe compressor stall vibrations.',
+          choices: [
+            { text: 'Cut afterburner, throttle to idle & divert to runway (Abort #2)', deltaScore: -15, safe: true },
+            { text: 'Attempt immediate in-flight windmill airstart', deltaScore: 5, safe: Math.random() > 0.5 }
+          ]
+        },
+        {
+          title: 'SAFETY NOTICE: 500-FT CROWD-BOX WIND INCLINATION',
+          desc: 'Crosswind gust is drifting diamond smoke plume toward the 1,500-ft spectator safety fence line.',
+          choices: [
+            { text: 'Call "KNOCK IT OFF" & re-orient flight axis outward (SOP Compliant)', deltaScore: -5, safe: true },
+            { text: 'Tighten formation bank to stay within inner boundary line', deltaScore: 8, safe: Math.random() > 0.3 }
+          ]
+        }
+      ];
+
+      const s = scenarios[Math.floor(Math.random() * scenarios.length)];
+      document.getElementById('emergency-title').textContent = s.title;
+      document.getElementById('emergency-desc').textContent = s.desc;
+
+      const choicesBox = document.getElementById('emergency-choices');
+      choicesBox.innerHTML = s.choices.map((c, i) => `
+        <button onclick="resolveEmergency(${c.deltaScore}, ${c.safe}, '${c.text.replace(/'/g, "\\'")}')" class="px-3 py-1.5 rounded bg-camo-black hover:bg-camo-charcoal border border-warningred/60 text-warningred font-mono text-xs font-bold text-left">
+          ${c.text}
+        </button>
+      `).join('');
+
+      document.getElementById('sim-emergency-box').classList.remove('hidden');
+    }
+
+    function resolveEmergency(deltaScore, safe, choiceText) {
+      document.getElementById('sim-emergency-box').classList.add('hidden');
+      currentSimData.emergencyActive = false;
+      currentSimData.crowdScoreAccum += deltaScore;
+
+      const consoleBox = document.getElementById('sim-console');
+      const resLine = document.createElement('div');
+
+      if (safe) {
+        soundEngine.playRadioBeep(980, 0.1);
+        resLine.className = 'text-hudgreen pl-2 py-0.5 border-l-2 border-hudgreen';
+        resLine.innerHTML = `<b>[EMERGENCY RESOLVED]:</b> ${choiceText}. Situation brought under control safely without FAA violation.`;
+        toast("Emergency managed safely! Demonstration resuming.", "info");
+      } else {
+        soundEngine.playWarningSquawk();
+        resLine.className = 'text-warningred pl-2 py-0.5 border-l-2 border-warningred font-bold';
+        resLine.innerHTML = `<b>[MISHAP WARNING]:</b> Pilot suffered partial disorientation during emergency response. Emergency landing gear deployed!`;
+        gameState.mishapHistoryCount++;
+        gameState.prestige = Math.max(20, gameState.prestige - 8);
+        toast("Mishap incident logged by safety officer!", "error");
+      }
+
+      consoleBox.appendChild(resLine);
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+    }
+
+    function executeCatastrophicCrashScenario() {
+      soundEngine.playWarningSquawk();
+      gameState.crashesCount += 1;
+      gameState.mishapHistoryCount += 1;
+      gameState.prestige = Math.max(15, gameState.prestige - 25);
+      gameState.hullInsuranceRate = Math.round(gameState.hullInsuranceRate * 2.8);
+
+      // Total loss of Jet #6
+      const lostJet = gameState.airframes[5];
+      lostJet.status = 'NMC';
+      lostJet.engineLife = 0;
+      lostJet.fatigue = 100;
+
+      // Pilot safely punches out
+      const pilot6 = gameState.pilots[5];
+      pilot6.morale = 40;
+      pilot6.fatigue = 90;
+
+      addLog(`🚨 CATASTROPHIC MISHAP LOGGED: Unrecoverable departure during opposing solo maneuver! ${pilot6.name} executed zero-zero ejection over uninhabited terrain. Airframe ${lostJet.tail} destroyed. FAA Safety Board convened. Annual insurance tripled.`);
+      toast("CATASTROPHIC CRASH: Pilot ejected safely. Hull destroyed, insurance rates surged.", "error");
+
+      saveGameState();
+      renderAll();
+      closeSimModal();
+    }
+
+    function concludeAirShow() {
+      soundEngine.playSuccessChime();
+      const show = currentSimData.show;
+
+      const synergy = checkDissimilarSynergy();
+      const synergyBonus = synergy.hasHistoricalRivalry ? 1.15 : synergy.isDissimilar ? 1.08 : 1.0;
+
+      const avgCrowdPerformance = Math.round((currentSimData.crowdScoreAccum / Math.max(1, currentSimData.maneuvers.length)) * synergyBonus);
+      const actualAttendance = Math.round(show.baseCrowd * (0.8 + (avgCrowdPerformance / 250)));
+      const gateCut = Math.round(show.purse + (actualAttendance * 0.45));
+      const sponsorBonuses = calculateActiveSponsorShowBonuses();
+      const totalRevenue = gateCut + sponsorBonuses;
+
+      const jetFuelUsed = Math.min(gameState.fuelGallons, Math.round(currentSimData.maneuvers.length * 1600));
+      gameState.fuelGallons -= jetFuelUsed;
+
+      const showExp = Math.round(28000 + (jetFuelUsed * 1.5));
+      const netProfit = totalRevenue - showExp;
+
+      gameState.funds += netProfit;
+      gameState.totalAttendance += actualAttendance;
+      gameState.prestige = Math.min(100, gameState.prestige + 4);
+
+      // Wear and fatigue
+      gameState.pilots.forEach(p => {
+        p.fatigue = Math.min(100, p.fatigue + 14);
+        p.morale = Math.min(100, p.morale + 5);
+      });
+      gameState.airframes.slice(0, 6).forEach(a => {
+        a.hours += 3;
+        a.engineLife = Math.max(0, a.engineLife - 2);
+        a.fatigue = Math.min(100, a.fatigue + 3);
+      });
+
+      gameState.completedShowLog.push({
+        name: show.name,
+        week: show.week,
+        attendance: actualAttendance,
+        totalRevenue: totalRevenue,
+        netProfit: netProfit
+      });
+
+      addLog(`AIR SHOW SUCCESS: ${show.name} completed! Crowd: ${actualAttendance.toLocaleString()} spectators. Gate + Sponsors: +$${totalRevenue.toLocaleString()}. Net Profit: +$${netProfit.toLocaleString()}.`);
+      toast(`Show Concluded! Net Profit: +$${netProfit.toLocaleString()}`, "success");
+
+      closeSimModal();
+      saveGameState();
+      renderAll();
     }
 
     /* =========================================================================
