@@ -109,7 +109,7 @@
   <div class="bg-gradient-to-r from-camo-black via-camo-slate to-camo-black border-b border-camo-titanium/30 px-3 py-1.5 text-center text-[11px] font-mono text-camo-ghost z-40 relative flex items-center justify-between gap-2">
     <div class="flex items-center gap-1.5 truncate text-left mx-auto">
       <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-hudgreen font-bold border border-emerald-500/30 text-[10px]">FAN CREATION</span>
-      <span class="truncate">Independent aviation photographer tribute sim. Inspired by Isaacman's ghost digi-camo MiG-29 & flight demo teams. Not affiliated with DoD, Navy, USAF, Blue Angels, Thunderbirds, or manufacturers.</span>
+      <span class="truncate">Independent aviation photographer tribute sim. Inspired by Isaacman's ghost digi-camo MiG-29 & flight demo teams. Not affiliated with DoD, Navy, USAF, military demonstration teams, or aircraft manufacturers.</span>
     </div>
     <button onclick="openDisclaimerModal()" class="shrink-0 text-amberhud hover:text-white underline text-[10px] ml-2 font-hud font-bold">DISCLAIMER</button>
   </div>
@@ -129,6 +129,8 @@
           </div>
           <!-- Split-Week Calendar Badge -->
           <div class="text-[11px] font-mono text-camo-titanium flex items-center gap-2">
+            <span>SEASON <b id="top-year" class="text-hudgreen">1</b></span>
+            <span class="text-slate-600">|</span>
             <span>WEEK <b id="top-week" class="text-white">1</b>/36</span>
             <span class="text-slate-600">|</span>
             <span id="top-subweek-phase" class="px-1.5 py-0.2 rounded bg-camo-slate text-amberhud font-bold border border-amberhud/30">MON-THU: BASE OPS</span>
@@ -419,7 +421,7 @@
           <div>
             <div class="flex items-center gap-2">
               <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amberhud/20 text-amberhud border border-amberhud/30">ANNUAL RUSH BOARD</span>
-              <h2 class="text-xl font-hud font-bold text-white tracking-wide">BLUE ANGELS & THUNDERBIRDS STYLE RECRUITMENT</h2>
+              <h2 class="text-xl font-hud font-bold text-white tracking-wide">PILOT RECRUITING & RUSH SELECTION BOARD</h2>
             </div>
             <p class="text-camo-titanium text-xs font-mono mt-1">Screen top-tier tactical fighter pilots applying to join the team. Vetting includes service record reviews, team chemistry dinners, and backseat hop rides.</p>
           </div>
@@ -715,13 +717,14 @@
           <!-- Section 2 -->
           <div id="sec-rush" class="p-4 rounded-xl bg-camo-black/70 border border-camo-titanium/20 space-y-2">
             <h3 class="font-hud font-bold text-base text-amberhud flex items-center gap-2">
-              <span>02.</span> BLUE ANGELS & THUNDERBIRDS PILOT SCREENING ("THE RUSH")
+              <span>02.</span> FLIGHT DEMO PILOT SCREENING ("THE RUSH") & 3-YEAR TOURS
             </h3>
-            <p>Every winter, candidates from combat fighter wings submit dossiers to join the demonstration team. Vetting follows a strict 3-phase pipeline:</p>
+            <p>Every winter, candidates from combat fighter wings submit dossiers to join the demonstration team. Demonstration pilots serve a maximum 3-year tour of duty before rotating back to combat fleets, requiring ongoing recruitment:</p>
             <ul class="list-disc pl-5 space-y-1 text-camo-titanium">
               <li><b class="text-white">Phase 1 (Paper Screening):</b> Verifies minimum 1,250 tactical carrier/strike fighter hours, combat medals, and impeccable flight evaluation reports.</li>
               <li><b class="text-white">Phase 2 (Social Rush Dinner):</b> Evaluates team chemistry, personal ego control, and psychological poise under high social stress. The entire team must vote unanimously.</li>
               <li><b class="text-white">Phase 3 (Backseat Hop-Ride):</b> Flown in the two-seat Jet #7. The candidate is subjected to 7.5+ Gs, rapid rolls, and close-proximity formation tracking to evaluate raw stick-and-rudder reflexes.</li>
+              <li><b class="text-amberhud">3-Year Mandatory Tour Rotation:</b> Demonstration duty is limited to 3 continuous seasons. At the end of every season, pilots finishing Year 3 retire, requiring rush board vetting to fill vacancies during winter workups.</li>
             </ul>
           </div>
 
@@ -1039,7 +1042,7 @@
         This flight demonstration team management simulator is an independent, non-commercial fan tribute project created by an aviation photographer and enthusiast.
       </p>
       <p class="leading-relaxed text-camo-titanium">
-        The creator and this simulator are <strong class="text-white">in no way affiliated with</strong> the United States Government, the Department of Defense, the United States Navy, the United States Air Force, the Blue Angels, the Thunderbirds, or any aircraft manufacturers (Lockheed Martin, Boeing, Northrop Grumman, Mikoyan, etc.).
+        The creator and this simulator are <strong class="text-white">in no way affiliated with</strong> the United States Government, the Department of Defense, the United States Navy, the United States Air Force, military flight demonstration teams, or any aircraft manufacturers (Lockheed Martin, Boeing, Northrop Grumman, Mikoyan, etc.).
       </p>
       <p class="leading-relaxed text-camo-titanium">
         All aircraft models, callsigns, and simulation events are designed strictly for educational, historical, and entertainment gameplay.
@@ -1952,10 +1955,11 @@
     ];
 
     /* =========================================================================
-       DEFAULT GAME STATE (HETEROGENEOUS FLEET EQUIPPED)
+       DEFAULT GAME STATE (HETEROGENEOUS FLEET EQUIPPED & 3-YEAR TOURS)
        ========================================================================= */
     const DEFAULT_GAME_STATE = {
       teamName: 'Ghost Apex',
+      year: 1,
       week: 1,
       subweek: 'mon-thu', // 'mon-thu' or 'fri-sun'
       funds: 5200000,
@@ -1971,14 +1975,14 @@
       forcedWeather: null,
       currentRoutine: ['diamond_takeoff', 'dact_merge', 'dact_rolling_scissors', 'sneak_pass', 'dact_defensive_break_flares', 'calypso_pass', 'bomb_burst'],
       pilots: [
-        { id: 1, role: 'Boss (#1 Flight Lead)', name: 'Cmdr. Jared "Polaris" Vance', precision: 92, gTol: 9.3, awareness: 94, charisma: 95, fatigue: 15, morale: 94 },
-        { id: 2, role: 'Left Wing (#2)', name: 'Capt. Marcus "Bolt" Evans', precision: 86, gTol: 8.6, awareness: 87, charisma: 78, fatigue: 18, morale: 89 },
-        { id: 3, role: 'Right Wing (#3)', name: 'Maj. Elena "Nova" Rostova', precision: 88, gTol: 8.9, awareness: 90, charisma: 84, fatigue: 20, morale: 91 },
-        { id: 4, role: 'Slot Pilot (#4)', name: 'Capt. Devon "Anvil" Briggs', precision: 93, gTol: 9.2, awareness: 89, charisma: 72, fatigue: 22, morale: 86 },
-        { id: 5, role: 'Lead Solo (#5)', name: 'Maj. Travis "Ripcord" Hayes', precision: 94, gTol: 9.5, awareness: 95, charisma: 89, fatigue: 24, morale: 92 },
-        { id: 6, role: 'Opposing Solo (#6)', name: 'Capt. Jax "Static" Mercer', precision: 90, gTol: 9.4, awareness: 92, charisma: 86, fatigue: 25, morale: 90 },
-        { id: 7, role: 'Narrator / Safety (#7)', name: 'Maj. Sarah "Echo" Chen', precision: 82, gTol: 7.8, awareness: 96, charisma: 97, fatigue: 10, morale: 95 },
-        { id: 8, role: 'Maintenance Chief', name: 'Master Sgt. Bobby "Wrench" O\'Reilly', precision: 96, gTol: 6.0, awareness: 98, charisma: 68, fatigue: 28, morale: 90 }
+        { id: 1, role: 'Boss (#1 Flight Lead)', name: 'Cmdr. Jared "Polaris" Vance', precision: 92, gTol: 9.3, awareness: 94, charisma: 95, fatigue: 15, morale: 94, tourYear: 2, vacant: false },
+        { id: 2, role: 'Left Wing (#2)', name: 'Capt. Marcus "Bolt" Evans', precision: 86, gTol: 8.6, awareness: 87, charisma: 78, fatigue: 18, morale: 89, tourYear: 1, vacant: false },
+        { id: 3, role: 'Right Wing (#3)', name: 'Maj. Elena "Nova" Rostova', precision: 88, gTol: 8.9, awareness: 90, charisma: 84, fatigue: 20, morale: 91, tourYear: 3, vacant: false },
+        { id: 4, role: 'Slot Pilot (#4)', name: 'Capt. Devon "Anvil" Briggs', precision: 93, gTol: 9.2, awareness: 89, charisma: 72, fatigue: 22, morale: 86, tourYear: 2, vacant: false },
+        { id: 5, role: 'Lead Solo (#5)', name: 'Maj. Travis "Ripcord" Hayes', precision: 94, gTol: 9.5, awareness: 95, charisma: 89, fatigue: 24, morale: 92, tourYear: 3, vacant: false },
+        { id: 6, role: 'Opposing Solo (#6)', name: 'Capt. Jax "Static" Mercer', precision: 90, gTol: 9.4, awareness: 92, charisma: 86, fatigue: 25, morale: 90, tourYear: 1, vacant: false },
+        { id: 7, role: 'Narrator / Safety (#7)', name: 'Maj. Sarah "Echo" Chen', precision: 82, gTol: 7.8, awareness: 96, charisma: 97, fatigue: 10, morale: 95, tourYear: 2, vacant: false },
+        { id: 8, role: 'Maintenance Chief', name: 'Master Sgt. Bobby "Wrench" O\'Reilly', precision: 96, gTol: 6.0, awareness: 98, charisma: 68, fatigue: 28, morale: 90, tourYear: 2, vacant: false }
       ],
       airframes: [
         { tail: 'GA-01', role: 'Boss (#1)', jetModel: 'mig29', status: 'FMC', hours: 380, engineLife: 95, fatigue: 12, smokeOk: true },
@@ -2029,11 +2033,106 @@
     }
 
     /* =========================================================================
-       SAVE / DATA MANAGEMENT SYSTEM (EXPORT / IMPORT JSON)
+       SPLIT-WEEK PROGRESSION ENGINE (MON-THU vs FRI-SUN) & NEVER-ENDING SEASONS
        ========================================================================= */
-    function openDataModal() {
-      soundEngine.playRadioBeep(900, 0.08);
-      document.getElementById('modal-data').classList.remove('hidden');
+    function advanceSplitWeek() {
+      soundEngine.init();
+      soundEngine.playRadioBeep(880, 0.1);
+
+      if (gameState.subweek === 'mon-thu') {
+        gameState.subweek = 'fri-sun';
+        const scheduledShow = TOUR_SCHEDULE_DATA.find(s => s.week === gameState.week);
+        if (scheduledShow) {
+          const hasVacancies = gameState.pilots.slice(0, 6).some(p => p.vacant);
+          if (hasVacancies) {
+            soundEngine.playWarningSquawk();
+            addLog(`WARNING: Air show at ${scheduledShow.name} cancelled due to vacant flight line pilot slots!`);
+            toast("Show Cancelled: Flight line slots vacant! Recruit via Rush Board.", "error");
+          } else if (!gameState.certified) {
+            soundEngine.playWarningSquawk();
+            addLog(`WARNING: Weekend air show at ${scheduledShow.name} cancelled due to uncertified status!`);
+            toast(`Show at ${scheduledShow.name} Cancelled: Team Uncertified!`, "error");
+          } else {
+            addLog(`WEEKEND ARRIVAL: Deployed to ${scheduledShow.name} (${scheduledShow.city}). Rehearsal & flight box survey initiated.`);
+            toast(`Arrived at ${scheduledShow.name}!`, "success");
+            startAirShowSimulation(scheduledShow);
+            saveGameState();
+            renderAll();
+            return;
+          }
+        } else {
+          addLog("WEEKEND WORKUP: Conducting Friday formation refinement drills and weekend aerobatic simulations.");
+        }
+      } else {
+        gameState.subweek = 'mon-thu';
+        gameState.week += 1;
+
+        const rev = calculateWeeklySponsorRevenue();
+        const exp = calculateWeeklyBurn();
+        gameState.funds += (rev - exp);
+
+        gameState.pilots.forEach(p => {
+          if (!p.vacant) {
+            p.fatigue = Math.max(0, p.fatigue - 8);
+          }
+        });
+
+        // Season rollover: endless multi-year progression
+        if (gameState.week > 36) {
+          gameState.year = (gameState.year || 1) + 1;
+          gameState.week = 1;
+          gameState.completedShowLog = [];
+          gameState.certified = false; // Must recertify each new season
+          gameState.sortiesFlown = 0;
+          gameState.proficiency = Math.max(30, Math.round(gameState.proficiency * 0.7)); // Reset proficiency for new season
+
+          addLog(`════════════════════════════════════════════════════════════`);
+          addLog(`★ SEASON ${gameState.year - 1} CONCLUDED. WELCOME TO SEASON ${gameState.year} WINTER WORKUPS! ★`);
+
+          // Process 3-year pilot tours and retirements
+          let retiredCount = 0;
+          gameState.pilots.forEach(p => {
+            if (p.vacant) return;
+            p.tourYear = (p.tourYear || 1) + 1;
+            if (p.tourYear > 3) {
+              retiredCount++;
+              addLog(`HONORABLE RETIREMENT: ${p.role} ${p.name} completed their 3-year demonstration tour and returned to combat fleet service.`);
+              p.name = 'VACANT (Rush Selection Required)';
+              p.vacant = true;
+              p.precision = 40;
+              p.fatigue = 0;
+              p.morale = 75;
+              p.tourYear = 1;
+            }
+          });
+
+          generateNewApplicantPool();
+          soundEngine.playSuccessChime();
+          toast(`Season ${gameState.year} Begins! ${retiredCount} pilot(s) retired after 3-year tours. Screen recruits now!`, "info");
+        } else {
+          addLog(`Season ${gameState.year || 1} Week ${gameState.week} Mon-Thu operations initialized. Base maintenance and pilot recruiting open.`);
+        }
+      }
+
+      saveGameState();
+      renderAll();
+    }
+
+    /* =========================================================================
+       CALCULATIONS & PROFICIENCY
+       ========================================================================= */
+    function getAveragePilotFatigue() {
+      const activePilots = gameState.pilots.slice(0, 6).filter(p => !p.vacant);
+      if (activePilots.length === 0) return 0;
+      const sum = activePilots.reduce((acc, p) => acc + p.fatigue, 0);
+      return Math.round(sum / activePilots.length);
+    }
+
+    function getAverageGTolerance() {
+      const activePilots = gameState.pilots.slice(0, 6).filter(p => !p.vacant);
+      if (activePilots.length === 0) return "0.0";
+      const sum = activePilots.reduce((acc, p) => acc + p.gTol, 0);
+      return (sum / activePilots.length).toFixed(1);
     }
     function closeDataModal() {
       document.getElementById('modal-data').classList.add('hidden');
@@ -2511,6 +2610,13 @@
         return;
       }
 
+      const hasVacancies = gameState.pilots.slice(0, 6).some(p => p.vacant);
+      if (hasVacancies) {
+        soundEngine.playWarningSquawk();
+        toast("Cannot fly formation sortie: One or more flight line slots are VACANT! Recruit candidates via Rush Board.", "error");
+        return;
+      }
+
       const activeLineNmc = gameState.airframes.slice(0, 6).some(a => a.status === 'NMC');
       if (activeLineNmc) {
         soundEngine.playWarningSquawk();
@@ -2525,8 +2631,10 @@
       gameState.proficiency = Math.min(99, gameState.proficiency + gain);
 
       gameState.pilots.forEach(p => {
-        p.fatigue = Math.min(100, p.fatigue + 8);
-        if (Math.random() > 0.4) p.precision = Math.min(99, p.precision + 1);
+        if (!p.vacant) {
+          p.fatigue = Math.min(100, p.fatigue + 8);
+          if (Math.random() > 0.4) p.precision = Math.min(99, p.precision + 1);
+        }
       });
 
       gameState.airframes.slice(0, 6).forEach(a => {
@@ -2709,11 +2817,15 @@
         return;
       }
 
-      const ok = confirm(`Officially offer the ${currentPilot.role} slot to ${app.name}? ${currentPilot.name} will rotate out.`);
+      const promptMsg = currentPilot.vacant
+        ? `Officially appoint ${app.name} to fill the vacant ${currentPilot.role} position (Year 1 of 3)?`
+        : `Officially offer the ${currentPilot.role} slot to ${app.name}? ${currentPilot.name} will rotate out early.`;
+
+      const ok = confirm(promptMsg);
       if (!ok) return;
 
       soundEngine.playSuccessChime();
-      addLog(`NEW SQUADRON PILOT SELECTED: ${app.name} officially inducted as ${currentPilot.role}!`);
+      addLog(`NEW PILOT INDUCTED: ${app.name} officially selected as ${currentPilot.role} (Commencing Year 1 of 3-year tour).`);
 
       currentPilot.name = app.name;
       currentPilot.precision = app.precision;
@@ -2722,6 +2834,8 @@
       currentPilot.charisma = app.poise;
       currentPilot.fatigue = 5;
       currentPilot.morale = 98;
+      currentPilot.tourYear = 1;
+      currentPilot.vacant = false;
 
       gameState.applicants = gameState.applicants.filter(a => a.id !== appId);
 
@@ -2875,6 +2989,14 @@
       closeCheckrideModal();
       soundEngine.init();
 
+      const hasVacancies = gameState.pilots.slice(0, 6).some(p => p.vacant);
+      if (hasVacancies) {
+        soundEngine.playWarningSquawk();
+        addLog("CERTIFICATION CHECKRIDE REJECTED: One or more flight line positions are VACANT. You must complete rush selection first.");
+        toast("Checkride Rejected: All 6 flight line slots must be filled!", "error");
+        return;
+      }
+
       if (gameState.proficiency < 60 || gameState.sortiesFlown < 18) {
         soundEngine.playWarningSquawk();
         addLog("CERTIFICATION CHECKRIDE UNSATISFACTORY: Formation precision must reach 60% with at least 18 sorties flown.");
@@ -2885,8 +3007,8 @@
       soundEngine.playSuccessChime();
       gameState.certified = true;
       gameState.prestige = Math.min(100, gameState.prestige + 15);
-      addLog("COMMANDER & FAA EVALUATION: PASSED! Squadron officially certified for nationwide air show tour.");
-      toast("CERTIFICATION GRANTED! Authorized for National Tour.", "success");
+      addLog(`COMMANDER & FAA EVALUATION: PASSED! Season ${gameState.year || 1} flight line officially certified for nationwide air show tour.`);
+      toast(`SEASON ${gameState.year || 1} CERTIFIED! Authorized for National Tour.`, "success");
       saveGameState();
       renderAll();
     }
@@ -3153,6 +3275,30 @@
       grid.innerHTML = gameState.pilots.map((p, idx) => {
         const airframe = gameState.airframes[idx] || { tail: 'GA-00', jetModel: 'mig29' };
         const jet = JET_DATABASE[airframe.jetModel] || JET_DATABASE['mig29'];
+        const tourYear = p.tourYear || 1;
+        let tourBadge = `<span class="px-1.5 py-0.2 rounded bg-camo-black text-camo-titanium border border-camo-titanium/30 text-[9px]">Tour: Yr ${tourYear}/3</span>`;
+        if (tourYear === 3) {
+          tourBadge = `<span class="px-1.5 py-0.2 rounded bg-amberhud/20 text-amberhud border border-amberhud/40 text-[9px] font-bold">Tour: Yr 3/3 (Final Year - Retires Winter)</span>`;
+        }
+
+        if (p.vacant) {
+          return `
+            <div class="hud-card rounded-xl p-4 space-y-3 relative overflow-hidden border-warningred/60 bg-red-950/20">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-camo-black text-warningred border border-warningred/40 font-bold uppercase">${p.role}</span>
+                <span class="font-mono text-[10px] text-warningred font-bold animate-pulse">POSITION VACANT</span>
+              </div>
+              <div>
+                <h4 class="font-hud font-bold text-base text-red-200">${p.name}</h4>
+                <p class="text-[11px] font-mono text-camo-titanium mt-1">Previous pilot rotated out after completing 3-year tour. New applicant required!</p>
+              </div>
+              <button onclick="switchTab('recruiting')" class="w-full py-2 rounded bg-amberhud/20 hover:bg-amberhud/30 border border-amberhud/50 text-amberhud font-hud font-bold text-xs tracking-wider">
+                GO TO RECRUITING BOARD
+              </button>
+            </div>
+          `;
+        }
+
         return `
           <div class="hud-card rounded-xl p-4 space-y-3 relative overflow-hidden">
             <div class="flex items-center justify-between">
@@ -3160,11 +3306,13 @@
               <span class="font-mono text-xs ${p.fatigue > 50 ? 'text-warningred font-bold' : 'text-camo-titanium'}">Fatigue: ${p.fatigue}%</span>
             </div>
             <div>
-              <h4 class="font-hud font-bold text-base text-white">${p.name}</h4>
-              <div class="text-[11px] font-mono text-camo-titanium flex items-center gap-2 mt-0.5">
-                <span>Morale: <b class="text-goldfoil">${p.morale}%</b></span>
-                <span>•</span>
-                <span>G-Tol: <b class="text-amberhud">${p.gTol}G</b></span>
+              <div class="flex items-center justify-between">
+                <h4 class="font-hud font-bold text-base text-white truncate">${p.name}</h4>
+              </div>
+              <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                ${tourBadge}
+                <span class="text-[10px] font-mono text-camo-titanium">Morale: <b class="text-goldfoil">${p.morale}%</b></span>
+                <span class="text-[10px] font-mono text-camo-titanium">G-Tol: <b class="text-amberhud">${p.gTol}G</b></span>
               </div>
             </div>
 
@@ -3715,7 +3863,9 @@
        GLOBAL UI MASTER RENDER
        ========================================================================= */
     function renderAll() {
+      if (!gameState.year) gameState.year = 1;
       document.getElementById('top-team-name').textContent = gameState.teamName;
+      document.getElementById('top-year').textContent = gameState.year;
       document.getElementById('top-week').textContent = gameState.week;
       document.getElementById('top-phase').textContent = gameState.week <= 10 ? 'WINTER WORKUPS' : 'NATIONAL AIR SHOW TOUR';
       document.getElementById('top-subweek-phase').textContent = gameState.subweek === 'mon-thu' ? 'MON-THU: BASE OPS' : 'FRI-SUN: SHOW WEEKEND';
@@ -3732,7 +3882,7 @@
       if (btnLabel) {
         btnLabel.textContent = gameState.subweek === 'mon-thu' ? 'ADVANCE TO WEEKEND (FRI-SUN)' : 'ADVANCE TO NEXT WEEK (MON-THU)';
       }
-      document.getElementById('ops-phase-detail').textContent = gameState.subweek === 'mon-thu' ? 'MON-THU (Base Prep & Recruitment)' : 'FRI-SUN (Rehearsal & Air Shows)';
+      document.getElementById('ops-phase-detail').textContent = gameState.subweek === 'mon-thu' ? 'MON-THU (Base Prep & Pilot Recruiting)' : 'FRI-SUN (Rehearsal & Air Shows)';
       document.getElementById('ops-transit-status').textContent = gameState.subweek === 'mon-thu' ? 'At Home Base Station' : 'Deployed On-Site at Show Airfield';
 
       document.getElementById('hq-proficiency-val').textContent = `${gameState.proficiency}%`;
